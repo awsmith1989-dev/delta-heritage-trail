@@ -53,17 +53,27 @@
     <section class="map-hero" id="top">
       <div id="trail-map" class="trail-map trail-map--hero" role="application" aria-label="Interactive map of the Delta Heritage Trail"></div>
 
-      <div class="map-hero__overlay">
-        <p class="map-hero__wordmark"><span>Delta</span><span>Heritage</span><span>Trail</span></p>
-        <p class="map-hero__tagline">
-          A rail-trail through the Arkansas Delta, linking river towns from
-          Lexa to Arkansas City.
-        </p>
-        <div class="map-hero__actions">
-          <a class="btn btn--primary" href="#towns">Explore Trail Towns</a>
-          <a class="btn btn--outline" href="#plan">Plan Your Ride</a>
+      <div class="map-hero__overlay" id="map-hero-overlay">
+        <button
+          type="button"
+          class="map-hero__toggle"
+          id="map-hero-toggle"
+          aria-expanded="true"
+          aria-controls="map-hero-body"
+          aria-label="Minimize trail info"
+        >&minus;</button>
+        <div class="map-hero__body" id="map-hero-body">
+          <p class="map-hero__wordmark"><span>Delta</span><span>Heritage</span><span>Trail</span></p>
+          <p class="map-hero__tagline">
+            A rail-trail through the Arkansas Delta, linking river towns from
+            Lexa to Arkansas City.
+          </p>
+          <div class="map-hero__actions">
+            <a class="btn btn--primary" href="#towns">Explore Trail Towns</a>
+            <a class="btn btn--outline" href="#plan">Plan Your Ride</a>
+          </div>
+          <p id="map-status" class="map-status" hidden></p>
         </div>
-        <p id="map-status" class="map-status" hidden></p>
       </div>
 
       <div class="map-legend map-legend--overlay" role="group" aria-label="Map layers">

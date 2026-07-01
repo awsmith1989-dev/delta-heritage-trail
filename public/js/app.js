@@ -7,6 +7,7 @@ import { renderStats } from './stats.js';
 document.addEventListener('DOMContentLoaded', async () => {
   setupNav();
   setupSmoothScroll();
+  setupHeroToggle();
   setYear();
 
   const [dataset, mapboxToken] = await Promise.all([loadTrailData(), loadMapboxToken()]);
@@ -75,6 +76,19 @@ function setupSmoothScroll() {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
+  });
+}
+
+function setupHeroToggle() {
+  const overlay = document.getElementById('map-hero-overlay');
+  const toggle = document.getElementById('map-hero-toggle');
+  if (!overlay || !toggle) return;
+
+  toggle.addEventListener('click', () => {
+    const collapsed = overlay.classList.toggle('is-collapsed');
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', collapsed ? 'Show trail info' : 'Minimize trail info');
+    toggle.innerHTML = collapsed ? '&plus;' : '&minus;';
   });
 }
 
