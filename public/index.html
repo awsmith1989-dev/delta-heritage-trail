@@ -42,7 +42,7 @@
       </button>
 
       <nav class="nav" id="nav-menu" aria-label="Primary">
-        <a href="#map">Trail Map</a>
+        <a href="#top">Trail Map</a>
         <a href="#towns">Trail Towns</a>
         <a href="#plan">Plan Your Ride</a>
       </nav>
@@ -50,28 +50,50 @@
   </header>
 
   <main id="main">
-    <section class="hero" id="top">
-      <div class="hero__pattern" aria-hidden="true"></div>
-      <div class="container hero__inner">
-        <p class="eyebrow">Arkansas Delta &middot; Rail-Trail</p>
-        <h1>The Delta Heritage Trail</h1>
-        <p class="hero__lede">
-          A rail-trail winding through the Arkansas Delta along the historic Union Pacific
-          corridor &mdash; linking river towns from Lexa to Arkansas City for walking,
-          running, and riding.
+    <section class="map-hero" id="top">
+      <div id="trail-map" class="trail-map trail-map--hero" role="application" aria-label="Interactive map of the Delta Heritage Trail"></div>
+
+      <div class="map-hero__overlay">
+        <p class="map-hero__wordmark"><span>Delta</span><span>Heritage</span><span>Trail</span></p>
+        <p class="map-hero__tagline">
+          A rail-trail through the Arkansas Delta, linking river towns from
+          Lexa to Arkansas City.
         </p>
-        <div class="hero__actions">
-          <a class="btn btn--primary" href="#map">Explore the Map</a>
+        <div class="map-hero__actions">
+          <a class="btn btn--primary" href="#towns">Explore Trail Towns</a>
           <a class="btn btn--outline" href="#plan">Plan Your Ride</a>
         </div>
+        <p id="map-status" class="map-status" hidden></p>
+      </div>
+
+      <div class="map-legend map-legend--overlay" role="group" aria-label="Map layers">
+        <label class="map-legend__item">
+          <input type="checkbox" data-layer="completed" checked />
+          <span class="map-legend__swatch map-legend__swatch--solid"></span>
+          Completed
+        </label>
+        <label class="map-legend__item">
+          <input type="checkbox" data-layer="remaining" checked />
+          <span class="map-legend__swatch map-legend__swatch--dashed"></span>
+          Remaining / Under Construction
+        </label>
+        <label class="map-legend__item">
+          <input type="checkbox" data-layer="communities" checked />
+          <span class="map-legend__swatch map-legend__swatch--marker"></span>
+          Trail Towns
+        </label>
       </div>
     </section>
 
     <section class="stats-strip" id="stats-strip" aria-label="Trail statistics">
       <div class="container stats-strip__grid">
         <div class="stat">
-          <span class="stat__value" id="stat-miles">&mdash;</span>
-          <span class="stat__label">Miles of Trail</span>
+          <span class="stat__value" id="stat-miles-completed">&mdash;</span>
+          <span class="stat__label">Miles Completed</span>
+        </div>
+        <div class="stat">
+          <span class="stat__value" id="stat-miles-remaining">&mdash;</span>
+          <span class="stat__label">Miles Remaining</span>
         </div>
         <div class="stat">
           <span class="stat__value" id="stat-towns">&mdash;</span>
@@ -80,43 +102,6 @@
         <div class="stat">
           <span class="stat__value" id="stat-amenities">&mdash;</span>
           <span class="stat__label">Local Amenities</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="section map-section" id="map">
-      <div class="container">
-        <div class="section__heading">
-          <p class="eyebrow">Interactive Map</p>
-          <h2>Explore the Route</h2>
-          <p class="section__lede">
-            The trail is built in two sections. The northern section is complete and
-            shown as a solid line; the southern section is still coming together and
-            shown as a dashed line. Click any trail town marker to see nearby amenities.
-          </p>
-        </div>
-
-        <div class="map-legend" role="group" aria-label="Map layers">
-          <label class="map-legend__item">
-            <input type="checkbox" data-layer="northern" checked />
-            <span class="map-legend__swatch map-legend__swatch--solid"></span>
-            Northern Section
-          </label>
-          <label class="map-legend__item">
-            <input type="checkbox" data-layer="southern" checked />
-            <span class="map-legend__swatch map-legend__swatch--dashed"></span>
-            Southern Section
-          </label>
-          <label class="map-legend__item">
-            <input type="checkbox" data-layer="communities" checked />
-            <span class="map-legend__swatch map-legend__swatch--marker"></span>
-            Trail Towns
-          </label>
-        </div>
-
-        <div class="map-frame">
-          <div id="trail-map" class="trail-map" role="application" aria-label="Interactive map of the Delta Heritage Trail"></div>
-          <p id="map-status" class="map-status" hidden></p>
         </div>
       </div>
     </section>
@@ -190,7 +175,7 @@
         <p class="site-footer__tagline">Arkansas Delta Rail-Trail &middot; Lexa to Arkansas City</p>
       </div>
       <nav class="site-footer__links" aria-label="Footer">
-        <a href="#map">Trail Map</a>
+        <a href="#top">Trail Map</a>
         <a href="#towns">Trail Towns</a>
         <a href="#plan">Plan Your Ride</a>
       </nav>

@@ -1,11 +1,12 @@
-import { escapeHtml, escapeAttr, median } from './utils.js';
+import { escapeHtml, escapeAttr } from './utils.js';
+import { isSegmentComplete } from './normalize.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
 
-const SECTION_COLORS = {
-  northern: '#1a5c38',
-  southern: '#4a9b6f',
+const STATUS_COLORS = {
+  completed: '#1a5c38',
+  remaining: '#c1592e',
 };
 
 export function initMap(dataset, mapboxToken) {
@@ -70,32 +71,24 @@ function hasCoordinates(community) {
 }
 
 function buildSegmentLines(segments, communityById) {
-  const withPoints = segments
+  return segments
     .map((segment) => {
       const points = segment.communityIds
         .map((id) => communityById.get(id))
         .filter((c) => c && hasCoordinates(c));
       if (points.length < 2) return null;
       const sorted = [...points].sort((a, b) => b.lat - a.lat);
-      const avgLat = points.reduce((sum, p) => sum + p.lat, 0) / points.length;
       return {
         ...segment,
-        avgLat,
+        section: isSegmentComplete(segment.status) ? 'completed' : 'remaining',
         coordinates: sorted.map((p) => [p.lng, p.lat]),
       };
     })
     .filter(Boolean);
-
-  const mid = median(withPoints.map((s) => s.avgLat));
-
-  return withPoints.map((segment) => ({
-    ...segment,
-    section: mid === null || segment.avgLat >= mid ? 'northern' : 'southern',
-  }));
 }
 
 function addSegmentLayers(map, segmentLines) {
-  ['northern', 'southern'].forEach((section) => {
+  ['completed', 'remaining'].forEach((section) => {
     const features = segmentLines
       .filter((s) => s.section === section)
       .map((s) => ({
@@ -114,9 +107,9 @@ function addSegmentLayers(map, segmentLines) {
       source: sourceId,
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
-        'line-color': SECTION_COLORS[section],
+        'line-color': STATUS_COLORS[section],
         'line-width': 5,
-        ...(section === 'southern' ? { 'line-dasharray': [2, 2] } : {}),
+        ...(section === 'remaining' ? { 'line-dasharray': [2, 2] } : {}),
       },
     });
 

@@ -1,9 +1,17 @@
+import { isSegmentComplete } from './normalize.js';
+
 export function renderStats(dataset) {
   if (dataset.error) return;
 
-  const totalMiles = dataset.segments.reduce((sum, s) => sum + (s.distance || 0), 0);
+  const milesCompleted = dataset.segments
+    .filter((s) => isSegmentComplete(s.status))
+    .reduce((sum, s) => sum + (s.distance || 0), 0);
+  const milesRemaining = dataset.segments
+    .filter((s) => !isSegmentComplete(s.status))
+    .reduce((sum, s) => sum + (s.distance || 0), 0);
 
-  setStat('stat-miles', totalMiles ? formatMiles(totalMiles) : '—');
+  setStat('stat-miles-completed', milesCompleted ? formatMiles(milesCompleted) : '—');
+  setStat('stat-miles-remaining', milesRemaining ? formatMiles(milesRemaining) : '—');
   setStat('stat-towns', dataset.communities.length || '—');
   setStat('stat-amenities', dataset.amenities.length || '—');
 }

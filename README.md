@@ -48,9 +48,16 @@ Latitude and Longitude on the Communities table** for the map to draw the
 trail path and place town markers — until then, the map shows a friendly
 empty state and the rest of the site still works from the other fields.
 
-The trail is split into a solid "northern" line and a dashed "southern" line
-by comparing each segment's average latitude to the median latitude across
-all segments — no hardcoded town list, so it keeps working as the base grows.
+The trail is drawn as a solid green "Completed" line where a segment's
+`Status` is `Open` or `Active`, and a dashed orange "Remaining / Under
+Construction" line for any other status (`Planned`, `Under Construction`,
+`Under Maintenance`, `Inactive`) — matching how the trail is actually being
+built out in phases, rather than a simple north/south split. See
+`public/js/normalize.js` (`isSegmentComplete`) to adjust that mapping.
+
+The site lands directly on the full-size map (hero), with the wordmark and
+CTAs in an overlay card and a stats strip (miles completed/remaining, trail
+towns, amenities) directly below it.
 
 ## Local development
 

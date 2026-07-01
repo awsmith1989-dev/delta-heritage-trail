@@ -3,6 +3,14 @@ function toFiniteNumber(value) {
   return Number.isFinite(num) ? num : null;
 }
 
+// Segments.Status choices in Airtable: Open, Active (built) vs.
+// Planned, Under Construction, Under Maintenance, Inactive (not yet ridable).
+const COMPLETE_STATUSES = new Set(['open', 'active']);
+
+export function isSegmentComplete(status) {
+  return COMPLETE_STATUSES.has(String(status).toLowerCase());
+}
+
 function extractImageUrl(attachments) {
   if (!Array.isArray(attachments) || !attachments.length) return '';
   const first = attachments[0];
