@@ -1,0 +1,13 @@
+{
+  "name": "delta-heritage-trail",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static site for the Delta Heritage Trail (Arkansas), served from Netlify with serverless functions proxying Airtable.",
+  "scripts": {
+    "dev": "netlify dev",
+    "start": "netlify dev"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.0"
+  }
+}
