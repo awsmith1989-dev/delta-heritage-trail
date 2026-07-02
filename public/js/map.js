@@ -1,5 +1,6 @@
 import { escapeHtml, escapeAttr } from './utils.js';
 import { amenityIconsHtml } from './amenity-icons.js';
+import { setupOsmPoiLayer } from './osm-poi.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
@@ -62,6 +63,7 @@ export function initMap(dataset, mapboxToken) {
     addSegmentLayer(map, segmentLines);
     addCommunityMarkers(map, locatedCommunities, dataset.amenities);
     fitToData(map, segmentLines, locatedCommunities);
+    setupOsmPoiLayer(map);
   });
 }
 

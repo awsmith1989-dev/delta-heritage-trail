@@ -9,6 +9,8 @@
   --text-dark: #16351f;
   --text-muted: #4d5c53;
   --border: #d9e8dd;
+  --osm-gray: #9297a0;
+  --osm-gray-text: #565b62;
   --shadow: 0 12px 30px -14px rgba(26, 92, 56, 0.35);
   --radius: 14px;
   --font-heading: 'Poppins', 'Segoe UI', sans-serif;
@@ -332,6 +334,69 @@ img {
   height: 520px;
 }
 
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.map-legend--overlay {
+  position: absolute;
+  z-index: 1;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(6px);
+  padding: 10px 20px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.map-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.map-legend__swatch {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.map-legend__swatch--trail {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--forest-dark);
+}
+
+.map-legend__swatch--verified {
+  width: 14px;
+  height: 14px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--forest-dark);
+  border: 2px solid var(--white);
+  box-shadow: 0 0 0 1px var(--forest-dark);
+  transform: rotate(-45deg);
+}
+
+.map-legend__swatch--community {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--osm-gray);
+  border: 1.5px solid var(--white);
+  box-shadow: 0 0 0 1px var(--osm-gray);
+}
+
 .map-status {
   background: rgba(255, 255, 255, 0.95);
   border-left: 4px solid var(--forest-light);
@@ -344,7 +409,10 @@ img {
   border-left-color: #b3452f;
 }
 
+/* Verified Airtable amenity/town marker — kept visually distinct (large green
+   branded pin) from the small gray OSM community-data dots below. */
 .trail-marker {
+  position: relative;
   width: 20px;
   height: 20px;
   border-radius: 50% 50% 50% 0;
@@ -353,6 +421,49 @@ img {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
   transform: rotate(-45deg);
   cursor: pointer;
+}
+
+.trail-marker::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--white);
+  transform: translate(-50%, -50%);
+}
+
+/* OSM Overpass "community data" marker — small, muted, unbranded */
+.osm-poi-marker {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+}
+
+.osm-poi-marker__dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--osm-gray);
+  border: 1.5px solid var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.osm-poi-marker__label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--osm-gray-text);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 1px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .map-popup {
@@ -681,5 +792,18 @@ img {
   .map-hero__overlay.is-collapsed {
     right: auto;
     padding: 8px;
+  }
+
+  .map-legend--overlay {
+    left: 16px;
+    right: 16px;
+    bottom: 12px;
+    transform: none;
+    max-width: none;
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    gap: 8px 14px;
+    font-size: 0.8rem;
+    justify-content: flex-start;
   }
 }

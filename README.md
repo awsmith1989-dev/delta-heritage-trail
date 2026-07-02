@@ -14,7 +14,8 @@ netlify/functions/mapbox-token.js  Serves the Mapbox token to the frontend
 public/                         Static site (Netlify publish directory)
   index.html
   css/styles.css
-  js/                           ES modules: data.js, normalize.js, map.js, towns.js, stats.js, app.js
+  js/                           ES modules: data.js, normalize.js, map.js, osm-poi.js,
+                                 amenity-icons.js, towns.js, stats.js, app.js
 ```
 
 No build step or bundler is required — `public/` is deployed as-is and the
@@ -58,6 +59,21 @@ the trail as finished.
 The site lands directly on the full-size map (hero), with the wordmark and
 CTAs in an overlay card and a stats strip (miles completed/remaining, trail
 towns, amenities) directly below it.
+
+### Map data layers
+
+The map shows two distinct marker layers, explained in its legend:
+
+- **Verified Amenities** (green branded pins) — Airtable Communities, as
+  described above.
+- **Community Data** (small gray dots with labels) — `public/js/osm-poi.js`
+  queries the public [Overpass API](https://overpass-api.de/api/interpreter)
+  (OpenStreetMap) for restaurants, cafes, hotels/lodging, convenience stores,
+  and bicycle shops within the current viewport, refetching on `move` with a
+  500ms debounce. It only queries at zoom ≥ 10 and caps results at 50, both to
+  stay within reasonable use of a free shared public endpoint. Overpass
+  requires no API key; failures or empty results are silent by design — the
+  map just shows fewer dots rather than an error.
 
 ## Local development
 
