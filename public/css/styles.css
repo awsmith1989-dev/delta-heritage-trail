@@ -411,8 +411,13 @@ img {
 
 /* Verified Airtable amenity/town marker — kept visually distinct (large green
    branded pin) from the small gray OSM community-data dots below. */
+/* No `position` set here on purpose: Mapbox GL JS uses this exact element as
+   the marker root and positions it via `position: absolute` + a CSS
+   transform. Overriding `position` (even to `relative`) breaks that
+   anchoring, since our stylesheet loads after mapbox-gl.css and wins the
+   cascade tie at equal specificity. Center the inner dot with flexbox
+   instead of absolute positioning to avoid touching `position` at all. */
 .trail-marker {
-  position: relative;
   width: 20px;
   height: 20px;
   border-radius: 50% 50% 50% 0;
@@ -421,18 +426,17 @@ img {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
   transform: rotate(-45deg);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .trail-marker::after {
   content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--white);
-  transform: translate(-50%, -50%);
 }
 
 /* OSM Overpass "community data" marker — small, muted, unbranded */
