@@ -1,4 +1,5 @@
 import { escapeHtml, escapeAttr } from './utils.js';
+import { amenityIconsHtml } from './amenity-icons.js';
 
 export function renderTrailTowns(dataset) {
   const grid = document.getElementById('towns-grid');
@@ -14,13 +15,17 @@ export function renderTrailTowns(dataset) {
     return;
   }
 
-  grid.innerHTML = dataset.communities.map(townCard).join('');
+  grid.innerHTML = dataset.communities
+    .map((community) => townCard(community, dataset.amenities))
+    .join('');
 }
 
-function townCard(community) {
+function townCard(community, amenities) {
   const badge = community.trailReadyStatus
     ? `<span class="town-card__badge town-card__badge--${slug(community.trailReadyStatus)}">${escapeHtml(community.trailReadyStatus)}</span>`
     : '';
+
+  const communityAmenities = amenities.filter((a) => a.communityIds.includes(community.id));
 
   return `
     <article class="town-card">
@@ -32,6 +37,7 @@ function townCard(community) {
         <h3>${escapeHtml(community.name)}</h3>
         ${community.niche ? `<p class="town-card__niche">${escapeHtml(community.niche)}</p>` : ''}
         <p>${escapeHtml(community.description || 'More information coming soon.')}</p>
+        ${amenityIconsHtml(communityAmenities)}
         ${community.website ? `<a class="town-card__link" href="${escapeAttr(community.website)}" target="_blank" rel="noopener">Learn more &rarr;</a>` : ''}
       </div>
     </article>

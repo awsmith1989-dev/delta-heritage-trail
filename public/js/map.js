@@ -1,4 +1,5 @@
 import { escapeHtml, escapeAttr } from './utils.js';
+import { amenityIconsHtml } from './amenity-icons.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
@@ -155,6 +156,7 @@ function popupHtml(community, amenities) {
       ${community.description ? `<p>${escapeHtml(community.description)}</p>` : ''}
       <div class="map-popup__amenities">
         <p class="map-popup__amenities-label">Amenities</p>
+        ${amenityIconsHtml(amenities)}
         ${amenitiesHtml}
       </div>
       ${community.website ? `<a class="map-popup__link" href="${escapeAttr(community.website)}" target="_blank" rel="noopener">Visit website</a>` : ''}
