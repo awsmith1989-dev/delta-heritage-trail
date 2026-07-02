@@ -48,12 +48,12 @@ Latitude and Longitude on the Communities table** for the map to draw the
 trail path and place town markers — until then, the map shows a friendly
 empty state and the rest of the site still works from the other fields.
 
-The trail is drawn as a solid green "Completed" line where a segment's
-`Status` is `Open` or `Active`, and a dashed orange "Remaining / Under
-Construction" line for any other status (`Planned`, `Under Construction`,
-`Under Maintenance`, `Inactive`) — matching how the trail is actually being
-built out in phases, rather than a simple north/south split. See
-`public/js/normalize.js` (`isSegmentComplete`) to adjust that mapping.
+The map draws every segment as a single solid green line, regardless of its
+`Status` field — the site launches once the trail is substantially complete,
+so there's no in-progress state to visualize on the map yet. The stats strip
+still breaks out miles completed vs. remaining from real `Status` values (see
+`public/js/normalize.js`'s `isSegmentComplete`); only the map itself treats
+the trail as finished.
 
 The site lands directly on the full-size map (hero), with the wordmark and
 CTAs in an overlay card and a stats strip (miles completed/remaining, trail

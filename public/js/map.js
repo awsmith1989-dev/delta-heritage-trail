@@ -1,13 +1,12 @@
 import { escapeHtml, escapeAttr } from './utils.js';
-import { isSegmentComplete } from './normalize.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
 
-const STATUS_COLORS = {
-  completed: '#1a5c38',
-  remaining: '#c1592e',
-};
+// The map is drawn as a single completed trail for now, regardless of each
+// segment's actual Airtable Status — the site launches once the trail is
+// substantially finished, so there's no in-progress state to show yet.
+const TRAIL_COLOR = '#1a5c38';
 
 export function initMap(dataset, mapboxToken) {
   const mapEl = document.getElementById('trail-map');
@@ -59,10 +58,9 @@ export function initMap(dataset, mapboxToken) {
       setStatus(statusEl, '', false, true);
     }
 
-    addSegmentLayers(map, segmentLines);
-    const markers = addCommunityMarkers(map, locatedCommunities, dataset.amenities);
+    addSegmentLayer(map, segmentLines);
+    addCommunityMarkers(map, locatedCommunities, dataset.amenities);
     fitToData(map, segmentLines, locatedCommunities);
-    setupLegendToggles(map, markers);
   });
 }
 
@@ -80,53 +78,43 @@ function buildSegmentLines(segments, communityById) {
       const sorted = [...points].sort((a, b) => b.lat - a.lat);
       return {
         ...segment,
-        section: isSegmentComplete(segment.status) ? 'completed' : 'remaining',
         coordinates: sorted.map((p) => [p.lng, p.lat]),
       };
     })
     .filter(Boolean);
 }
 
-function addSegmentLayers(map, segmentLines) {
-  ['completed', 'remaining'].forEach((section) => {
-    const features = segmentLines
-      .filter((s) => s.section === section)
-      .map((s) => ({
-        type: 'Feature',
-        properties: { name: s.name, distance: s.distance, status: s.status },
-        geometry: { type: 'LineString', coordinates: s.coordinates },
-      }));
+function addSegmentLayer(map, segmentLines) {
+  const features = segmentLines.map((s) => ({
+    type: 'Feature',
+    properties: { name: s.name, distance: s.distance },
+    geometry: { type: 'LineString', coordinates: s.coordinates },
+  }));
 
-    const sourceId = `${section}-segment`;
-    map.addSource(sourceId, { type: 'geojson', data: { type: 'FeatureCollection', features } });
+  map.addSource('trail-segment', { type: 'geojson', data: { type: 'FeatureCollection', features } });
 
-    const layerId = `${sourceId}-line`;
-    map.addLayer({
-      id: layerId,
-      type: 'line',
-      source: sourceId,
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: {
-        'line-color': STATUS_COLORS[section],
-        'line-width': 5,
-        ...(section === 'remaining' ? { 'line-dasharray': [2, 2] } : {}),
-      },
-    });
+  const layerId = 'trail-segment-line';
+  map.addLayer({
+    id: layerId,
+    type: 'line',
+    source: 'trail-segment',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': TRAIL_COLOR, 'line-width': 5 },
+  });
 
-    map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
-    map.on('click', layerId, (e) => {
-      const props = e.features[0].properties;
-      new mapboxgl.Popup({ offset: 12 })
-        .setLngLat(e.lngLat)
-        .setHTML(
-          `<div class="map-popup">
-            <h3>${escapeHtml(props.name)}</h3>
-            <p>${escapeHtml(props.distance)} miles &middot; ${escapeHtml(props.status || 'Status unknown')}</p>
-          </div>`
-        )
-        .addTo(map);
-    });
+  map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+  map.on('click', layerId, (e) => {
+    const props = e.features[0].properties;
+    new mapboxgl.Popup({ offset: 12 })
+      .setLngLat(e.lngLat)
+      .setHTML(
+        `<div class="map-popup">
+          <h3>${escapeHtml(props.name)}</h3>
+          <p>${escapeHtml(props.distance)} miles</p>
+        </div>`
+      )
+      .addTo(map);
   });
 }
 
@@ -186,27 +174,6 @@ function fitToData(map, segmentLines, communities) {
     new mapboxgl.LngLatBounds(points[0], points[0])
   );
   map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 0 });
-}
-
-function setupLegendToggles(map, markers) {
-  document.querySelectorAll('.map-legend [data-layer]').forEach((input) => {
-    input.addEventListener('change', () => {
-      const layer = input.dataset.layer;
-      const visible = input.checked;
-
-      if (layer === 'communities') {
-        markers.forEach((marker) => {
-          marker.getElement().style.display = visible ? '' : 'none';
-        });
-        return;
-      }
-
-      const layerId = `${layer}-segment-line`;
-      if (map.getLayer(layerId)) {
-        map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
-      }
-    });
-  });
 }
 
 function setStatus(el, message, isError, hide) {
