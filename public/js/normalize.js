@@ -58,7 +58,7 @@ export function normalizeCommunity(record) {
     niche: f['Niche Identity'] || '',
     trailReadyStatus: f['Trail Ready Status'] || '',
     website: f['Website'] || '',
-    photo: extractImageUrl(f['Community Photo (AI)']) || LOCAL_PHOTO_OVERRIDES[name] || '',
+    photo: extractImageUrl(f['Community Image']) || extractImageUrl(f['Community Photo (AI)']) || LOCAL_PHOTO_OVERRIDES[name] || '',
     amenityIds: Array.isArray(f['Amenities']) ? f['Amenities'] : [],
   };
 }
