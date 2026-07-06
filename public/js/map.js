@@ -90,7 +90,7 @@ function buildSegmentLines(segments, communityById) {
 function addSegmentLayer(map, segmentLines) {
   const features = segmentLines.map((s) => ({
     type: 'Feature',
-    properties: { name: s.name, distance: s.distance },
+    properties: { name: s.name, distance: s.distance, photo: s.photo },
     geometry: { type: 'LineString', coordinates: s.coordinates },
   }));
 
@@ -114,6 +114,7 @@ function addSegmentLayer(map, segmentLines) {
       .setHTML(
         `<div class="map-popup">
           <h3>${escapeHtml(props.name)}</h3>
+          ${props.photo ? `<img class="map-popup__photo" src="${escapeAttr(props.photo)}" alt="${escapeAttr(props.name)}" />` : ''}
           <p>${escapeHtml(props.distance)} miles</p>
         </div>`
       )
@@ -155,6 +156,7 @@ function popupHtml(community, amenities) {
   return `
     <div class="map-popup">
       <h3>${escapeHtml(community.name)}</h3>
+      ${community.photo ? `<img class="map-popup__photo" src="${escapeAttr(community.photo)}" alt="${escapeAttr(community.name)}" />` : ''}
       ${community.description ? `<p>${escapeHtml(community.description)}</p>` : ''}
       <div class="map-popup__amenities">
         <p class="map-popup__amenities-label">Amenities</p>
