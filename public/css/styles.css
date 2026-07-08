@@ -287,7 +287,7 @@ img {
 }
 
 .trail-map--section {
-  height: clamp(420px, 70vh, 640px);
+  height: clamp(520px, 82vh, 780px);
 }
 
 .eyebrow {
@@ -297,35 +297,6 @@ img {
   font-weight: 700;
   color: var(--forest-light);
   margin-bottom: 10px;
-}
-
-/* Stats strip */
-.stats-strip {
-  background: var(--accent-bg);
-  border-bottom: 1px solid var(--border);
-}
-
-.stats-strip__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  padding: 36px 24px;
-  text-align: center;
-}
-
-.stat__value {
-  display: block;
-  font-family: var(--font-heading);
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--forest-dark);
-}
-
-.stat__label {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 /* Sections */
@@ -756,17 +727,6 @@ img {
 }
 
 /* Responsive */
-@media (max-width: 900px) {
-  .stats-strip__grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px 12px;
-  }
-
-  .stat__value {
-    font-size: 1.6rem;
-  }
-}
-
 @media (max-width: 720px) {
   .nav-toggle {
     display: flex;
@@ -810,7 +770,7 @@ img {
   }
 
   .trail-map--section {
-    height: clamp(420px, 78vh, 620px);
+    height: clamp(480px, 84vh, 700px);
   }
 
   .video-hero {

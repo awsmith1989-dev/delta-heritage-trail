@@ -2,7 +2,6 @@ import { getMapboxToken, getTrailSegments, getCommunities, getAmenities } from '
 import { normalizeSegment, normalizeCommunity, normalizeAmenity } from './normalize.js';
 import { initMap } from './map.js';
 import { renderTrailTowns } from './towns.js';
-import { renderStats } from './stats.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupNav();
@@ -13,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   initMap(dataset, mapboxToken);
   renderTrailTowns(dataset);
-  renderStats(dataset);
 });
 
 async function loadTrailData() {
