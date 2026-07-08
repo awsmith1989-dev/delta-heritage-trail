@@ -130,6 +130,14 @@ function getRideRange() {
   };
 }
 
+// The set of community IDs the current ride passes through, including
+// pass-through towns between selected stops — used to highlight the
+// matching trail segments on the map.
+export function getRideStopIds() {
+  const range = getRideRange();
+  return new Set(range ? range.stops.map((c) => c.id) : []);
+}
+
 function render() {
   const listEl = document.getElementById('ride-planner-stops');
   const summaryEl = document.getElementById('ride-planner-summary');

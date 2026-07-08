@@ -1,7 +1,7 @@
 import { escapeHtml, escapeAttr } from './utils.js';
 import { amenityIconsHtml } from './amenity-icons.js';
 import { setupOsmPoiLayer } from './osm-poi.js';
-import { toggleCommunityInRide, isCommunityInRide, onRideChange } from './ride-planner.js';
+import { toggleCommunityInRide, isCommunityInRide, onRideChange, getRideStopIds } from './ride-planner.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
@@ -10,6 +10,7 @@ const DEFAULT_ZOOM = 9;
 // segment's actual Airtable Status — the site launches once the trail is
 // substantially finished, so there's no in-progress state to show yet.
 const TRAIL_COLOR = '#1a5c38';
+const RIDE_HIGHLIGHT_COLOR = '#c1592e';
 
 export function initMap(dataset, mapboxToken) {
   const mapEl = document.getElementById('trail-map');
@@ -62,6 +63,7 @@ export function initMap(dataset, mapboxToken) {
     }
 
     addSegmentLayer(map, segmentLines);
+    addRideHighlightLayer(map, segmentLines);
     addCommunityMarkers(map, locatedCommunities, dataset.amenities);
     fitToData(map, segmentLines, locatedCommunities);
     setupOsmPoiLayer(map);
@@ -120,6 +122,33 @@ function addSegmentLayer(map, segmentLines) {
         </div>`
       )
       .addTo(map);
+  });
+}
+
+function addRideHighlightLayer(map, segmentLines) {
+  map.addSource('trail-segment-highlight', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  });
+
+  map.addLayer({
+    id: 'trail-segment-line-highlight',
+    type: 'line',
+    source: 'trail-segment-highlight',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': RIDE_HIGHLIGHT_COLOR, 'line-width': 7 },
+  });
+
+  onRideChange(() => {
+    const stopIds = getRideStopIds();
+    const features = segmentLines
+      .filter((s) => s.communityIds.every((id) => stopIds.has(id)))
+      .map((s) => ({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'LineString', coordinates: s.coordinates },
+      }));
+    map.getSource('trail-segment-highlight').setData({ type: 'FeatureCollection', features });
   });
 }
 
