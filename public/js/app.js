@@ -2,6 +2,7 @@ import { getMapboxToken, getTrailSegments, getCommunities, getAmenities } from '
 import { normalizeSegment, normalizeCommunity, normalizeAmenity } from './normalize.js';
 import { initMap } from './map.js';
 import { renderTrailTowns } from './towns.js';
+import { initRidePlanner } from './ride-planner.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupNav();
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const [dataset, mapboxToken] = await Promise.all([loadTrailData(), loadMapboxToken()]);
 
+  initRidePlanner(dataset);
   initMap(dataset, mapboxToken);
   renderTrailTowns(dataset);
 });

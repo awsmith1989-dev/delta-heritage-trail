@@ -430,6 +430,11 @@ img {
   background: var(--white);
 }
 
+.trail-marker--selected {
+  background: var(--accent-orange);
+  box-shadow: 0 0 0 3px rgba(193, 89, 46, 0.3), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
 /* OSM Overpass "community data" marker — small, muted, unbranded */
 .osm-poi-marker {
   display: flex;
@@ -555,6 +560,34 @@ img {
   text-decoration: none;
 }
 
+.map-popup__ride-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--forest-dark);
+  background: var(--white);
+  color: var(--forest-dark);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.map-popup__ride-btn:hover {
+  background: var(--accent-bg);
+}
+
+.map-popup__ride-btn--active {
+  background: var(--forest-dark);
+  color: var(--white);
+}
+
+.map-popup__ride-btn--active:hover {
+  background: var(--forest-light);
+}
+
 .mapboxgl-popup-content {
   border-radius: 10px !important;
   padding: 16px !important;
@@ -651,6 +684,148 @@ img {
   background: var(--white);
 }
 
+.ride-planner {
+  background: var(--accent-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) 1fr;
+  gap: 32px;
+}
+
+.ride-planner__intro h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.ride-planner__intro p {
+  color: var(--text-muted);
+  margin-bottom: 0;
+  font-size: 0.92rem;
+}
+
+.ride-planner__intro a {
+  font-weight: 600;
+}
+
+.ride-planner__body {
+  min-width: 0;
+}
+
+.ride-planner__stops {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ride-planner__empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.92rem;
+}
+
+.ride-planner__stop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 8px 8px 16px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.ride-planner__stop--selected {
+  border-color: var(--forest-dark);
+  color: var(--forest-dark);
+  background: var(--white);
+}
+
+.ride-planner__stop-badge {
+  background: var(--accent-orange);
+  color: var(--white);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.ride-planner__stop-remove {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent-bg-strong);
+  color: var(--forest-dark);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ride-planner__stop-remove:hover {
+  background: var(--forest-dark);
+  color: var(--white);
+}
+
+.ride-planner__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.ride-planner__stat {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.ride-planner__stat-value {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--forest-dark);
+}
+
+.ride-planner__stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ride-planner__amenities {
+  flex: 1;
+  min-width: 200px;
+}
+
+.ride-planner__amenities .amenity-icons {
+  margin-bottom: 6px;
+}
+
+.ride-planner__amenities-count,
+.ride-planner__amenities-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 .plan-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -728,6 +903,11 @@ img {
 
 /* Responsive */
 @media (max-width: 720px) {
+  .ride-planner {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+
   .nav-toggle {
     display: flex;
   }

@@ -1,6 +1,7 @@
 import { escapeHtml, escapeAttr } from './utils.js';
 import { amenityIconsHtml } from './amenity-icons.js';
 import { setupOsmPoiLayer } from './osm-poi.js';
+import { toggleCommunityInRide, isCommunityInRide, onRideChange } from './ride-planner.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
@@ -123,16 +124,20 @@ function addSegmentLayer(map, segmentLines) {
 }
 
 function addCommunityMarkers(map, communities, amenities) {
-  return communities.map((community) => {
+  const markerEls = new Map();
+
+  const markers = communities.map((community) => {
     const el = document.createElement('div');
     el.className = 'trail-marker';
     el.setAttribute('aria-label', community.name);
+    markerEls.set(community.id, el);
 
     const communityAmenities = amenities.filter((a) => a.communityIds.includes(community.id));
 
     const popup = new mapboxgl.Popup({ offset: 24, maxWidth: '280px' }).setHTML(
       popupHtml(community, communityAmenities)
     );
+    popup.on('open', () => popup.setHTML(popupHtml(community, communityAmenities)));
 
     const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat([community.lng, community.lat])
@@ -141,6 +146,26 @@ function addCommunityMarkers(map, communities, amenities) {
 
     return marker;
   });
+
+  map.getContainer().addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-ride-toggle]');
+    if (!btn) return;
+    toggleCommunityInRide(btn.getAttribute('data-ride-toggle'));
+  });
+
+  onRideChange((selectedIds) => {
+    markerEls.forEach((el, id) => {
+      el.classList.toggle('trail-marker--selected', selectedIds.includes(id));
+    });
+    document.querySelectorAll('[data-ride-toggle]').forEach((btn) => {
+      const id = btn.getAttribute('data-ride-toggle');
+      const inRide = isCommunityInRide(id);
+      btn.textContent = inRide ? 'Remove from My Ride' : 'Add to My Ride';
+      btn.classList.toggle('map-popup__ride-btn--active', inRide);
+    });
+  });
+
+  return markers;
 }
 
 function popupHtml(community, amenities) {
@@ -153,11 +178,16 @@ function popupHtml(community, amenities) {
         .join('')}</ul>`
     : '<p class="map-popup__empty">No amenities listed yet.</p>';
 
+  const inRide = isCommunityInRide(community.id);
+
   return `
     <div class="map-popup">
       <h3>${escapeHtml(community.name)}</h3>
       ${community.photo ? `<img class="map-popup__photo" src="${escapeAttr(community.photo)}" alt="${escapeAttr(community.name)}" />` : ''}
       ${community.description ? `<p>${escapeHtml(community.description)}</p>` : ''}
+      <button type="button" class="map-popup__ride-btn${inRide ? ' map-popup__ride-btn--active' : ''}" data-ride-toggle="${escapeAttr(community.id)}">
+        ${inRide ? 'Remove from My Ride' : 'Add to My Ride'}
+      </button>
       <div class="map-popup__amenities">
         <p class="map-popup__amenities-label">Amenities</p>
         ${amenityIconsHtml(amenities)}
