@@ -139,26 +139,28 @@ export function getRideStopIds() {
 }
 
 function render() {
+  const hintEl = document.getElementById('ride-hint');
+  const popupEl = document.getElementById('ride-popup');
   const listEl = document.getElementById('ride-planner-stops');
-  const summaryEl = document.getElementById('ride-planner-summary');
-  const clearBtn = document.getElementById('ride-planner-clear');
   const distanceEl = document.getElementById('ride-distance');
   const amenitiesEl = document.getElementById('ride-planner-amenities');
-  if (!listEl || !summaryEl || !clearBtn || !distanceEl || !amenitiesEl) return;
+  if (!popupEl || !listEl || !distanceEl || !amenitiesEl) return;
 
   if (!state.selectedIds.length) {
-    listEl.innerHTML = '<li class="ride-planner__empty">Click a trail town marker on the map above to set your start point.</li>';
-    summaryEl.hidden = true;
-    clearBtn.hidden = true;
+    if (hintEl) hintEl.hidden = false;
+    popupEl.hidden = true;
     return;
   }
 
+  if (hintEl) hintEl.hidden = true;
+  popupEl.hidden = false;
+
   const range = getRideRange();
-  clearBtn.hidden = false;
 
   if (!range) {
     listEl.innerHTML = '<li class="ride-planner__empty">Those towns aren&rsquo;t on a connected stretch of trail yet.</li>';
-    summaryEl.hidden = true;
+    distanceEl.textContent = '0';
+    amenitiesEl.innerHTML = '';
     return;
   }
 
@@ -187,11 +189,19 @@ function render() {
   );
 
   distanceEl.textContent = formatMiles(range.distance);
-  amenitiesEl.innerHTML = amenitiesInRange.length
-    ? `${amenityIconsHtml(amenitiesInRange)}<p class="ride-planner__amenities-count">${amenitiesInRange.length} amenities along the way</p>`
-    : '<p class="ride-planner__amenities-empty">No amenities listed along this stretch yet.</p>';
 
-  summaryEl.hidden = false;
+  if (amenitiesInRange.length) {
+    const listHtml = amenitiesInRange
+      .map((a) => {
+        const town = range.stops.find((c) => a.communityIds.includes(c.id));
+        const meta = [a.category, town?.name].filter(Boolean).join(' · ');
+        return `<li><strong>${escapeHtml(a.name)}</strong><span>${escapeHtml(meta)}</span></li>`;
+      })
+      .join('');
+    amenitiesEl.innerHTML = `${amenityIconsHtml(amenitiesInRange)}<ul class="map-popup__list ride-popup__amenity-list">${listHtml}</ul>`;
+  } else {
+    amenitiesEl.innerHTML = '<p class="ride-planner__amenities-empty">No amenities listed along this stretch yet.</p>';
+  }
 }
 
 function formatMiles(value) {

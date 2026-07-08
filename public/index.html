@@ -75,6 +75,27 @@
       <p id="map-status" class="map-status" hidden></p>
 
       <div id="trail-map" class="trail-map trail-map--section" role="application" aria-label="Interactive map of the Delta Heritage Trail"></div>
+
+      <p class="ride-hint" id="ride-hint">Click a trail town marker to start planning your ride</p>
+
+      <div class="ride-popup" id="ride-popup" hidden>
+        <div class="ride-popup__header">
+          <h3>Your Ride</h3>
+        </div>
+
+        <ol class="ride-planner__stops" id="ride-planner-stops"></ol>
+
+        <div class="ride-planner__summary" id="ride-planner-summary">
+          <div class="ride-planner__stat">
+            <span class="ride-planner__stat-value" id="ride-distance">0</span>
+            <span class="ride-planner__stat-label">Miles</span>
+          </div>
+        </div>
+
+        <div class="ride-popup__amenities" id="ride-planner-amenities"></div>
+
+        <button type="button" class="btn btn--outline ride-planner__clear" id="ride-planner-clear">Clear Ride</button>
+      </div>
     </section>
 
     <section class="section plan-section" id="plan">
@@ -83,35 +104,10 @@
           <p class="eyebrow">Before You Go</p>
           <h2>Plan Your Ride</h2>
           <p class="section__lede">
-            A few essentials for making the most of your visit to the Delta Heritage Trail.
+            Click a trail town marker on the map above to build a custom ride &mdash; the miles
+            and amenities along the way will show up right there. Here are a few extra
+            essentials for your visit.
           </p>
-        </div>
-
-        <div class="ride-planner" id="ride-planner">
-          <div class="ride-planner__intro">
-            <h3>Build Your Ride</h3>
-            <p>
-              Click a trail town marker on the <a href="#map">map above</a> to set your start
-              point, then add the towns you want to ride to. We&rsquo;ll total the miles and
-              amenities along the way.
-            </p>
-          </div>
-
-          <div class="ride-planner__body">
-            <ol class="ride-planner__stops" id="ride-planner-stops">
-              <li class="ride-planner__empty">Click a trail town marker on the map above to set your start point.</li>
-            </ol>
-
-            <div class="ride-planner__summary" id="ride-planner-summary" hidden>
-              <div class="ride-planner__stat">
-                <span class="ride-planner__stat-value" id="ride-distance">0</span>
-                <span class="ride-planner__stat-label">Miles</span>
-              </div>
-              <div class="ride-planner__amenities" id="ride-planner-amenities"></div>
-            </div>
-
-            <button type="button" class="btn btn--outline ride-planner__clear" id="ride-planner-clear" hidden>Clear Ride</button>
-          </div>
         </div>
 
         <div class="plan-grid">
