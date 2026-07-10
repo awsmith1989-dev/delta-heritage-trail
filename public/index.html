@@ -81,20 +81,30 @@
       <div class="ride-popup" id="ride-popup" hidden>
         <div class="ride-popup__header">
           <h3>Your Ride</h3>
+          <span class="ride-popup__mini-summary" id="ride-popup-mini-summary"></span>
+          <button
+            type="button"
+            class="ride-popup__minimize"
+            id="ride-popup-minimize"
+            aria-expanded="true"
+            aria-label="Minimize ride planner"
+          >&minus;</button>
         </div>
 
-        <ol class="ride-planner__stops" id="ride-planner-stops"></ol>
+        <div class="ride-popup__body" id="ride-popup-body">
+          <ol class="ride-planner__stops" id="ride-planner-stops"></ol>
 
-        <div class="ride-planner__summary" id="ride-planner-summary">
-          <div class="ride-planner__stat">
-            <span class="ride-planner__stat-value" id="ride-distance">0</span>
-            <span class="ride-planner__stat-label">Miles</span>
+          <div class="ride-planner__summary" id="ride-planner-summary">
+            <div class="ride-planner__stat">
+              <span class="ride-planner__stat-value" id="ride-distance">0</span>
+              <span class="ride-planner__stat-label">Miles</span>
+            </div>
           </div>
+
+          <div class="ride-popup__amenities" id="ride-planner-amenities"></div>
+
+          <button type="button" class="btn btn--outline ride-planner__clear" id="ride-planner-clear">Clear Ride</button>
         </div>
-
-        <div class="ride-popup__amenities" id="ride-planner-amenities"></div>
-
-        <button type="button" class="btn btn--outline ride-planner__clear" id="ride-planner-clear">Clear Ride</button>
       </div>
     </section>
 

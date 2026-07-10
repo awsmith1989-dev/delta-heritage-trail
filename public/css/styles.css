@@ -658,9 +658,68 @@ img {
   padding: 20px;
 }
 
+.ride-popup__header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  margin-bottom: 12px;
+}
+
 .ride-popup__header h3 {
   font-size: 1.1rem;
-  margin-bottom: 12px;
+  margin: 0;
+}
+
+.ride-popup__mini-summary {
+  display: none;
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--forest-dark);
+}
+
+.ride-popup__minimize {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--forest-dark);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ride-popup__minimize:hover {
+  background: var(--accent-bg);
+}
+
+.ride-popup--minimized {
+  padding: 10px 14px;
+  border-radius: 999px;
+  max-height: none;
+  overflow: visible;
+}
+
+.ride-popup--minimized .ride-popup__header {
+  margin-bottom: 0;
+}
+
+.ride-popup--minimized .ride-popup__mini-summary {
+  display: block;
+}
+
+.ride-popup--minimized .ride-popup__body {
+  display: none;
 }
 
 .ride-planner__stops {
@@ -872,7 +931,17 @@ img {
   }
 
   .ride-popup {
-    max-height: 60vh;
+    max-height: 42vh;
+    padding: 16px;
+  }
+
+  .ride-popup--minimized {
+    padding: 10px 14px;
+    max-height: none;
+  }
+
+  .ride-popup__amenity-list {
+    max-height: 130px;
   }
 
   .nav-toggle {

@@ -6,6 +6,7 @@ const state = {
   trailOrder: [],
   cumDistance: [],
   selectedIds: [],
+  isMinimized: false,
 };
 
 const listeners = new Set();
@@ -78,7 +79,13 @@ function removeCommunityFromRide(communityId) {
 
 function clearRide() {
   state.selectedIds = [];
+  state.isMinimized = false;
   notify();
+}
+
+function toggleMinimized() {
+  state.isMinimized = !state.isMinimized;
+  render();
 }
 
 export function isCommunityInRide(communityId) {
@@ -100,6 +107,7 @@ function notify() {
 function setupControls() {
   const listEl = document.getElementById('ride-planner-stops');
   const clearBtn = document.getElementById('ride-planner-clear');
+  const minimizeBtn = document.getElementById('ride-popup-minimize');
 
   if (listEl) {
     listEl.addEventListener('click', (e) => {
@@ -111,6 +119,10 @@ function setupControls() {
 
   if (clearBtn) {
     clearBtn.addEventListener('click', () => clearRide());
+  }
+
+  if (minimizeBtn) {
+    minimizeBtn.addEventListener('click', () => toggleMinimized());
   }
 }
 
@@ -141,6 +153,8 @@ export function getRideStopIds() {
 function render() {
   const hintEl = document.getElementById('ride-hint');
   const popupEl = document.getElementById('ride-popup');
+  const miniSummaryEl = document.getElementById('ride-popup-mini-summary');
+  const minimizeBtn = document.getElementById('ride-popup-minimize');
   const listEl = document.getElementById('ride-planner-stops');
   const distanceEl = document.getElementById('ride-distance');
   const amenitiesEl = document.getElementById('ride-planner-amenities');
@@ -154,6 +168,13 @@ function render() {
 
   if (hintEl) hintEl.hidden = true;
   popupEl.hidden = false;
+  popupEl.classList.toggle('ride-popup--minimized', state.isMinimized);
+
+  if (minimizeBtn) {
+    minimizeBtn.setAttribute('aria-expanded', String(!state.isMinimized));
+    minimizeBtn.setAttribute('aria-label', state.isMinimized ? 'Expand ride planner' : 'Minimize ride planner');
+    minimizeBtn.innerHTML = state.isMinimized ? '&plus;' : '&minus;';
+  }
 
   const range = getRideRange();
 
@@ -161,6 +182,7 @@ function render() {
     listEl.innerHTML = '<li class="ride-planner__empty">Those towns aren&rsquo;t on a connected stretch of trail yet.</li>';
     distanceEl.textContent = '0';
     amenitiesEl.innerHTML = '';
+    if (miniSummaryEl) miniSummaryEl.textContent = '';
     return;
   }
 
@@ -189,6 +211,11 @@ function render() {
   );
 
   distanceEl.textContent = formatMiles(range.distance);
+
+  if (miniSummaryEl) {
+    const stopCount = state.selectedIds.length;
+    miniSummaryEl.textContent = `${formatMiles(range.distance)} mi · ${stopCount} stop${stopCount === 1 ? '' : 's'}`;
+  }
 
   if (amenitiesInRange.length) {
     const listHtml = amenitiesInRange
