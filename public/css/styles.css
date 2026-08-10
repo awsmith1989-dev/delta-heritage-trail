@@ -412,6 +412,12 @@ img {
   background: var(--osm-gray);
 }
 
+/* Hidden below AMENITY_MARKER_MIN_ZOOM in map.js, rather than removed, so
+   toggling back on doesn't need to re-create the marker/popup. */
+.amenity-marker--hidden {
+  display: none;
+}
+
 /* OSM Overpass "community data" marker — small, muted, unbranded */
 .osm-poi-marker {
   display: flex;

@@ -6,6 +6,10 @@ import { toggleCommunityInRide, isCommunityInRide, onRideChange, getRideStopIds 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
 
+// Below this zoom, amenity pins are dense enough to overlap the community
+// markers, so they only appear once a rider has zoomed in on a community.
+const AMENITY_MARKER_MIN_ZOOM = 13;
+
 // The map is drawn as a single completed trail for now, regardless of each
 // segment's actual Airtable Status — the site launches once the trail is
 // substantially finished, so there's no in-progress state to show yet.
@@ -261,6 +265,19 @@ function addAmenityMarkers(map, amenities) {
       .setPopup(popup)
       .addTo(map);
   });
+
+  const updateAmenityMarkerVisibility = () => {
+    const visible = map.getZoom() >= AMENITY_MARKER_MIN_ZOOM;
+    markers.forEach((marker) => {
+      marker.getElement().classList.toggle('amenity-marker--hidden', !visible);
+      if (!visible && marker.getPopup()?.isOpen()) {
+        marker.getPopup().remove();
+      }
+    });
+  };
+
+  updateAmenityMarkerVisibility();
+  map.on('zoom', updateAmenityMarkerVisibility);
 
   return markers;
 }
