@@ -375,6 +375,43 @@ img {
   box-shadow: 0 0 0 3px rgba(193, 89, 46, 0.3), 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
+/* Individual amenity marker — a small icon badge, distinct from the
+   community teardrop pin above and the OSM dot below. Reuses the same
+   circular-chip look as the .amenity-icons__item popup chips. No `position`
+   set here for the same reason noted on .trail-marker. */
+.amenity-marker {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--forest-dark);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.amenity-marker img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* Fallback for categories without a matching icon file — a plain dot
+   rather than a guessed or placeholder icon. */
+.amenity-marker--generic {
+  border-color: var(--osm-gray);
+}
+
+.amenity-marker--generic::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--osm-gray);
+}
+
 /* OSM Overpass "community data" marker — small, muted, unbranded */
 .osm-poi-marker {
   display: flex;

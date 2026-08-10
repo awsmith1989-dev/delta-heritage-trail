@@ -23,6 +23,15 @@ const LOCAL_PHOTO_OVERRIDES = {
   Barton: '/img/towns/barton.jpg',
 };
 
+// "GPS Coordinates" is a free-text Airtable field formatted as "lat, lng"
+// and is not filled in for every amenity record.
+function parseGpsCoordinates(value) {
+  if (typeof value !== 'string' || !value.trim()) return { lat: null, lng: null };
+  const parts = value.split(',').map((part) => Number(part.trim()));
+  if (parts.length !== 2 || !parts.every(Number.isFinite)) return { lat: null, lng: null };
+  return { lat: parts[0], lng: parts[1] };
+}
+
 export function normalizeSegment(record) {
   const f = record.fields || {};
   return {
@@ -57,6 +66,7 @@ export function normalizeCommunity(record) {
 
 export function normalizeAmenity(record) {
   const f = record.fields || {};
+  const { lat, lng } = parseGpsCoordinates(f['GPS Coordinates']);
   return {
     id: record.id,
     name: f['Amenity Name'] || 'Amenity',
@@ -68,5 +78,7 @@ export function normalizeAmenity(record) {
     hours: f['Hours'] || '',
     verified: Boolean(f['Verified']),
     notes: f['Notes'] || '',
+    lat,
+    lng,
   };
 }

@@ -1,5 +1,5 @@
 import { escapeHtml, escapeAttr } from './utils.js';
-import { amenityIconsHtml } from './amenity-icons.js';
+import { amenityIconsHtml, amenityIconUrlForCategory } from './amenity-icons.js';
 import { setupOsmPoiLayer } from './osm-poi.js';
 import { toggleCommunityInRide, isCommunityInRide, onRideChange, getRideStopIds } from './ride-planner.js';
 
@@ -65,6 +65,7 @@ export function initMap(dataset, mapboxToken) {
     addSegmentLayer(map, segmentLines);
     addRideHighlightLayer(map, segmentLines);
     addCommunityMarkers(map, locatedCommunities, dataset.amenities);
+    addAmenityMarkers(map, dataset.amenities);
     fitToData(map, segmentLines, locatedCommunities);
     setupOsmPoiLayer(map);
   });
@@ -223,6 +224,53 @@ function popupHtml(community, amenities) {
         ${amenitiesHtml}
       </div>
       ${community.website ? `<a class="map-popup__link" href="${escapeAttr(community.website)}" target="_blank" rel="noopener">Visit website</a>` : ''}
+    </div>
+  `;
+}
+
+function hasAmenityCoordinates(amenity) {
+  return Number.isFinite(amenity.lat) && Number.isFinite(amenity.lng);
+}
+
+// Fine-grained per-amenity pins, layered on top of the community markers.
+// Only amenities with a parsed "GPS Coordinates" value get a pin — records
+// missing coordinates are silently skipped, not errored on.
+function addAmenityMarkers(map, amenities) {
+  const located = amenities.filter(hasAmenityCoordinates);
+
+  const markers = located.map((amenity) => {
+    const iconUrl = amenityIconUrlForCategory(amenity.category);
+
+    const el = document.createElement('div');
+    el.className = iconUrl ? 'amenity-marker' : 'amenity-marker amenity-marker--generic';
+    el.setAttribute('aria-label', amenity.name);
+    if (iconUrl) {
+      const img = document.createElement('img');
+      img.src = iconUrl;
+      img.alt = '';
+      img.width = 16;
+      img.height = 16;
+      img.loading = 'lazy';
+      el.appendChild(img);
+    }
+
+    const popup = new mapboxgl.Popup({ offset: 18, maxWidth: '240px' }).setHTML(amenityPopupHtml(amenity));
+
+    return new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([amenity.lng, amenity.lat])
+      .setPopup(popup)
+      .addTo(map);
+  });
+
+  return markers;
+}
+
+function amenityPopupHtml(amenity) {
+  return `
+    <div class="map-popup">
+      <h3>${escapeHtml(amenity.name)}</h3>
+      <p class="map-popup__amenities-label">${escapeHtml(amenity.category || 'Amenity')}</p>
+      ${amenity.mapsUrl ? `<a class="map-popup__link" href="${escapeAttr(amenity.mapsUrl)}" target="_blank" rel="noopener">View on Google Maps</a>` : ''}
     </div>
   `;
 }
