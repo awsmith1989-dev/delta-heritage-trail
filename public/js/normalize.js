@@ -76,6 +76,7 @@ export function normalizeAmenity(record) {
     mapsUrl: f['Google Maps URL'] || '',
     phone: f['Phone'] || '',
     hours: f['Hours'] || '',
+    additionalAmenities: Array.isArray(f['Additional Amenities']) ? f['Additional Amenities'] : [],
     verified: Boolean(f['Verified']),
     notes: f['Notes'] || '',
     lat,

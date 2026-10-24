@@ -1,5 +1,5 @@
 import { escapeHtml, escapeAttr } from './utils.js';
-import { amenityIconsHtml } from './amenity-icons.js';
+import { amenityIconsHtml, amenityListItemsHtml } from './amenity-icons.js';
 
 const state = {
   dataset: null,
@@ -218,13 +218,12 @@ function render() {
   }
 
   if (amenitiesInRange.length) {
-    const listHtml = amenitiesInRange
-      .map((a) => {
+    const listHtml = amenityListItemsHtml(amenitiesInRange, {
+      metaFor: (a) => {
         const town = range.stops.find((c) => a.communityIds.includes(c.id));
-        const meta = [a.category, town?.name].filter(Boolean).join(' · ');
-        return `<li><strong>${escapeHtml(a.name)}</strong><span>${escapeHtml(meta)}</span></li>`;
-      })
-      .join('');
+        return [a.category, town?.name].filter(Boolean).join(' · ');
+      },
+    });
     amenitiesEl.innerHTML = `${amenityIconsHtml(amenitiesInRange)}<ul class="map-popup__list ride-popup__amenity-list">${listHtml}</ul>`;
   } else {
     amenitiesEl.innerHTML = '<p class="ride-planner__amenities-empty">No amenities listed along this stretch yet.</p>';

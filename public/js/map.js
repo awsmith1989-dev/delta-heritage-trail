@@ -1,5 +1,5 @@
 import { escapeHtml, escapeAttr } from './utils.js';
-import { amenityIconsHtml, amenityIconUrlForCategory } from './amenity-icons.js';
+import { amenityIconsHtml, amenityIconUrlForCategory, amenityListItemsHtml } from './amenity-icons.js';
 import { setupOsmPoiLayer } from './osm-poi.js';
 import { locateOnTrail, sliceTrail } from './trail-line.js';
 import { toggleCommunityInRide, isCommunityInRide, onRideChange, getRideStopIds } from './ride-planner.js';
@@ -217,12 +217,7 @@ function addCommunityMarkers(map, communities, amenities) {
 
 function popupHtml(community, amenities) {
   const amenitiesHtml = amenities.length
-    ? `<ul class="map-popup__list">${amenities
-        .map(
-          (a) =>
-            `<li><strong>${escapeHtml(a.name)}</strong><span>${escapeHtml(a.category)}</span></li>`
-        )
-        .join('')}</ul>`
+    ? `<ul class="map-popup__list">${amenityListItemsHtml(amenities)}</ul>`
     : '<p class="map-popup__empty">No amenities listed yet.</p>';
 
   const inRide = isCommunityInRide(community.id);

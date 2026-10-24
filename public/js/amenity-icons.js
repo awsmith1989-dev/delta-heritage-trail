@@ -1,4 +1,4 @@
-import { escapeAttr } from './utils.js';
+import { escapeHtml, escapeAttr } from './utils.js';
 
 const ICON_BASE = '/img/amenity-icons';
 
@@ -26,6 +26,32 @@ function normalizeCategory(category) {
     .replace(/^_+|_+$/g, '');
 }
 
+// "Additional Amenities" options are worded differently from Category values
+// (and include a typo), so map them onto the Category wording to keep icons
+// and labels consistent.
+const AMENITY_ALIASES = {
+  bathroom: 'Restrooms',
+  bathrom: 'Restrooms',
+  restroom: 'Restrooms',
+  water_fountain: 'Water',
+  bike_rentals: 'Bike Rental',
+  bike_repair_station: 'Bike Repair',
+  repair_station: 'Bike Repair',
+};
+
+function canonicalLabel(name) {
+  return AMENITY_ALIASES[normalizeCategory(name)] || name;
+}
+
+// Everything a place offers: its own Category plus its Additional Amenities,
+// deduplicated once aliases are applied.
+function amenityFeatures(amenity) {
+  const labels = [amenity.category, ...(amenity.additionalAmenities || [])]
+    .filter(Boolean)
+    .map(canonicalLabel);
+  return [...new Set(labels)];
+}
+
 function iconFileFor(category) {
   return CATEGORY_ICONS[normalizeCategory(category)] || CATEGORY_ICONS.point_of_interest;
 }
@@ -38,23 +64,59 @@ export function amenityIconUrlForCategory(category) {
   return file ? `${ICON_BASE}/${file}` : null;
 }
 
-// One icon per distinct category present, in first-seen order.
+// One icon per distinct amenity across all the places given, counting each
+// place's Additional Amenities, in first-seen order. Amenities without
+// their own artwork share the generic icon, so they're merged into one chip
+// whose label lists them all.
 export function amenityIconsHtml(amenities) {
-  if (!amenities.length) return '';
+  const labelsByIcon = new Map();
+  amenities.flatMap(amenityFeatures).forEach((label) => {
+    const file = iconFileFor(label);
+    if (!labelsByIcon.has(file)) labelsByIcon.set(file, []);
+    const labels = labelsByIcon.get(file);
+    if (!labels.includes(label)) labels.push(label);
+  });
+  if (!labelsByIcon.size) return '';
 
-  const seen = new Set();
-  const items = [];
-  amenities.forEach((amenity) => {
-    const key = normalizeCategory(amenity.category);
-    if (seen.has(key)) return;
-    seen.add(key);
-    const label = amenity.category || 'Amenity';
-    items.push(
-      `<li class="amenity-icons__item" title="${escapeAttr(label)}">
-        <img src="${ICON_BASE}/${iconFileFor(label)}" alt="${escapeAttr(label)}" width="20" height="20" loading="lazy" />
-      </li>`
-    );
+  const items = [...labelsByIcon].map(([file, labels]) => {
+    const label = labels.join(', ');
+    return `<li class="amenity-icons__item" title="${escapeAttr(label)}">
+        <img src="${ICON_BASE}/${file}" alt="${escapeAttr(label)}" width="20" height="20" loading="lazy" />
+      </li>`;
   });
 
   return `<ul class="amenity-icons">${items.join('')}</ul>`;
+}
+
+// The Airtable "Google Maps URL" when set, otherwise a Google Maps search
+// for the place's GPS coordinates or address. Null if there's nothing to go on.
+function amenityMapsUrl(amenity) {
+  if (amenity.mapsUrl) return amenity.mapsUrl;
+  let query = '';
+  if (Number.isFinite(amenity.lat) && Number.isFinite(amenity.lng)) {
+    query = `${amenity.lat},${amenity.lng}`;
+  } else if (amenity.address) {
+    query = `${amenity.name}, ${amenity.address}`;
+  }
+  return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null;
+}
+
+// List items for a set of places: the name (linked to Google Maps when
+// possible), a short meta label, and the place's Additional Amenities.
+// `metaFor` returns the meta label for a place; it defaults to its Category.
+// Callers supply the surrounding <ul> and its class.
+export function amenityListItemsHtml(amenities, { metaFor = (a) => a.category } = {}) {
+  return amenities
+    .map((amenity) => {
+      const url = amenityMapsUrl(amenity);
+      const name = url
+        ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener">${escapeHtml(amenity.name)}</a>`
+        : escapeHtml(amenity.name);
+      const extras = amenityFeatures(amenity).filter((label) => label !== canonicalLabel(amenity.category));
+      return `<li>
+        <strong>${name}</strong><span>${escapeHtml(metaFor(amenity) || '')}</span>
+        ${extras.length ? `<small class="amenity-extras">${escapeHtml(extras.join(' · '))}</small>` : ''}
+      </li>`;
+    })
+    .join('');
 }

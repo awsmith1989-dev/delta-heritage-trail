@@ -1,5 +1,5 @@
 import { escapeHtml, escapeAttr } from './utils.js';
-import { amenityIconsHtml } from './amenity-icons.js';
+import { amenityIconsHtml, amenityListItemsHtml } from './amenity-icons.js';
 
 export function renderTrailTowns(dataset) {
   const grid = document.getElementById('towns-grid');
@@ -36,8 +36,9 @@ function townCard(community, amenities) {
       <div class="town-card__body">
         <h3>${escapeHtml(community.name)}</h3>
         ${community.niche ? `<p class="town-card__niche">${escapeHtml(community.niche)}</p>` : ''}
-        <p>${escapeHtml(community.description || 'More information coming soon.')}</p>
+        ${community.description ? `<p>${escapeHtml(community.description)}</p>` : ''}
         ${amenityIconsHtml(communityAmenities)}
+        ${communityAmenities.length ? `<ul class="town-card__places">${amenityListItemsHtml(communityAmenities)}</ul>` : ''}
         ${community.website ? `<a class="town-card__link" href="${escapeAttr(community.website)}" target="_blank" rel="noopener">Learn more &rarr;</a>` : ''}
       </div>
     </article>
