@@ -68,7 +68,10 @@ export function amenityIconUrlForCategory(category) {
 // place's Additional Amenities, in first-seen order. Amenities without
 // their own artwork share the generic icon, so they're merged into one chip
 // whose label lists them all.
-export function amenityIconsHtml(amenities) {
+//
+// With `max`, the row never exceeds that many chips: past the limit, the
+// last chip becomes a "+N" count of the rest, keeping the row on one line.
+export function amenityIconsHtml(amenities, { max = Infinity } = {}) {
   const labelsByIcon = new Map();
   amenities.flatMap(amenityFeatures).forEach((label) => {
     const file = iconFileFor(label);
@@ -78,12 +81,22 @@ export function amenityIconsHtml(amenities) {
   });
   if (!labelsByIcon.size) return '';
 
-  const items = [...labelsByIcon].map(([file, labels]) => {
+  const entries = [...labelsByIcon];
+  const shown = entries.length > max ? entries.slice(0, max - 1) : entries;
+  const hidden = entries.slice(shown.length);
+
+  const items = shown.map(([file, labels]) => {
     const label = labels.join(', ');
     return `<li class="amenity-icons__item" title="${escapeAttr(label)}">
         <img src="${ICON_BASE}/${file}" alt="${escapeAttr(label)}" width="20" height="20" loading="lazy" />
       </li>`;
   });
+  if (hidden.length) {
+    const label = hidden.flatMap(([, labels]) => labels).join(', ');
+    items.push(
+      `<li class="amenity-icons__item amenity-icons__item--more" title="${escapeAttr(label)}" aria-label="${escapeAttr(`Also: ${label}`)}">+${hidden.length}</li>`
+    );
+  }
 
   return `<ul class="amenity-icons">${items.join('')}</ul>`;
 }

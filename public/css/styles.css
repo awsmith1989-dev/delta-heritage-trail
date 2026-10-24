@@ -575,6 +575,12 @@ img {
   background: var(--accent-bg);
 }
 
+.amenity-icons__item--more {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--forest-dark);
+}
+
 .amenity-icons__item img {
   width: 20px;
   height: 20px;
@@ -630,10 +636,23 @@ img {
   background: var(--white);
 }
 
+/* Fixed column counts (3 / 2 / 1) so rows fill evenly. */
 .resources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
+}
+
+@media (max-width: 960px) {
+  .resources-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .resources-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* The whole card is the link. */
@@ -791,11 +810,14 @@ img {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
+/* Present on every card, even one with no amenities, and held to one
+   icon row (see the cap in towns.js) so all cards end at the same height. */
 .town-card__summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-height: 56px;
   padding: 12px 20px;
 }
 

@@ -51,7 +51,9 @@ function townCard(community, amenities) {
     communityAmenities.length ? `<ul class="town-card__places">${amenityListItemsHtml(communityAmenities)}</ul>` : '',
     community.website ? `<a class="town-card__link" href="${escapeAttr(community.website)}" target="_blank" rel="noopener">Learn more &rarr;</a>` : '',
   ].join('');
-  const iconsHtml = amenityIconsHtml(communityAmenities);
+  // Capped so the row stays on one line and every card's footer is the
+  // same height; the full list is in Details.
+  const iconsHtml = amenityIconsHtml(communityAmenities, { max: 4 });
 
   return `
     <article class="town-card">
@@ -68,7 +70,7 @@ function townCard(community, amenities) {
             </summary>
             <div class="town-card__body">${detailsHtml}</div>
           </details>`
-        : iconsHtml ? `<div class="town-card__summary">${iconsHtml}</div>` : ''}
+        : `<div class="town-card__summary">${iconsHtml}</div>`}
     </article>
   `;
 }
