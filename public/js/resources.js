@@ -32,16 +32,8 @@ function resourceCard(resource) {
       <div class="resource-card__body">
         <h3>${escapeHtml(resource.name)}</h3>
         ${resource.description ? `<p>${escapeHtml(resource.description)}</p>` : ''}
-        <span class="resource-card__host">${escapeHtml(hostname(resource.url))} &nearr;</span>
+        <span class="resource-card__host">Visit website &nearr;</span>
       </div>
     </a>
   `;
-}
-
-function hostname(url) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return 'Visit website';
-  }
 }

@@ -661,22 +661,22 @@ img {
 }
 
 /* Logo strip: the whole logo stays visible (never cropped) and sits
-   centered on a shared background, so logos with transparent backgrounds
-   all match regardless of their own colors or proportions. Cards without
-   an image simply skip it. */
+   centered on the brand green, which suits the light-colored logos these
+   organizations use on dark backgrounds. Cards without an image simply
+   skip it. Padding is tight because the uploaded logos already carry
+   transparent margins of their own. */
 .resource-card__logo {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 140px;
-  padding: 20px 24px;
-  background: var(--accent-bg);
-  border-bottom: 1px solid var(--border);
+  padding: 6px 24px;
+  background: var(--forest-dark);
 }
 
 .resource-card__logo img {
+  height: 100%;
   max-width: 100%;
-  max-height: 100%;
   object-fit: contain;
 }
 
