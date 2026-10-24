@@ -100,3 +100,15 @@ export function normalizePointOfInterest(record) {
     lng,
   };
 }
+
+export function normalizeResource(record) {
+  const f = record.fields || {};
+  return {
+    id: record.id,
+    name: f['Name'] || '',
+    url: f['Link'] || '',
+    description: f['Description'] || '',
+    image: extractImageUrl(f['Image']),
+    sortOrder: toFiniteNumber(f['Sort Order']),
+  };
+}

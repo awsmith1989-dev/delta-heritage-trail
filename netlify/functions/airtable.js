@@ -6,16 +6,19 @@ const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 //   Communities -> "Manage Trail Communities"
 //   Amenities   -> "Maintain Amenity Directory"
 //   Points of Interest
+//   Resources
 const ALLOWED_TABLES = {
   segments: 'tbla9jrcHD375EYO1',
   communities: 'tblA7uFLtYuWVMGGX',
   amenities: 'tbl8H94EhS1ITwvsW',
   pois: 'tbl0tTu5ysQ1CREYO',
+  resources: 'tblydhPAemL5p1w0D',
 };
 
 // Applied server-side so draft records never leave Airtable.
 const TABLE_FILTERS = {
   pois: '{Published}',
+  resources: '{Published}',
 };
 
 const BASE_HEADERS = {

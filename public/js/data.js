@@ -38,3 +38,8 @@ export async function getPointsOfInterest() {
   const data = await fetchJSON(`${FUNCTIONS_BASE}/airtable?table=pois`);
   return data.records || [];
 }
+
+export async function getResources() {
+  const data = await fetchJSON(`${FUNCTIONS_BASE}/airtable?table=resources`);
+  return data.records || [];
+}

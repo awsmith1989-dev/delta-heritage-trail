@@ -1,5 +1,6 @@
 import { escapeHtml, escapeAttr } from './utils.js';
 import { amenityIconsHtml, amenityListItemsHtml } from './amenity-icons.js';
+import { locateOnTrail } from './trail-line.js';
 
 export function renderTrailTowns(dataset) {
   const grid = document.getElementById('towns-grid');
@@ -15,9 +16,23 @@ export function renderTrailTowns(dataset) {
     return;
   }
 
-  grid.innerHTML = dataset.communities
+  grid.innerHTML = sortNorthToSouth(dataset.communities, dataset.trailLine)
     .map((community) => townCard(community, dataset.amenities))
     .join('');
+}
+
+// Trail order runs north (Lexa, mile 0) to south (Arkansas City), so sort by
+// trail mile when the traced route is available, otherwise by latitude.
+// Towns without coordinates go last.
+function sortNorthToSouth(communities, trailLine) {
+  const position = (c) => {
+    if (!Number.isFinite(c.lat) || !Number.isFinite(c.lng)) return Infinity;
+    return trailLine ? locateOnTrail(trailLine, c.lng, c.lat).mile : -c.lat;
+  };
+  return communities
+    .map((c) => ({ c, pos: position(c) }))
+    .sort((a, b) => a.pos - b.pos)
+    .map(({ c }) => c);
 }
 
 function townCard(community, amenities) {

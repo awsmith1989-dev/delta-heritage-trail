@@ -625,6 +625,90 @@ img {
   overscroll-behavior: contain;
 }
 
+/* Additional resources */
+.resources-section {
+  background: var(--white);
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+/* The whole card is the link. */
+.resource-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.resource-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px -14px rgba(26, 92, 56, 0.45);
+}
+
+.resource-card:focus-visible {
+  outline: 3px solid var(--forest-light);
+  outline-offset: 3px;
+}
+
+/* Logo strip: the whole logo stays visible (never cropped) and sits
+   centered on a shared background, so logos with transparent backgrounds
+   all match regardless of their own colors or proportions. Cards without
+   an image simply skip it. */
+.resource-card__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
+  padding: 20px 24px;
+  background: var(--accent-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.resource-card__logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.resource-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px 20px;
+}
+
+.resource-card__body h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.resource-card__body p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin: 0 0 14px;
+}
+
+.resource-card__host {
+  margin-top: auto;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--forest-light);
+}
+
+.resource-card:hover .resource-card__host {
+  color: var(--accent-orange);
+}
+
 /* Trail towns */
 .towns-section {
   background: var(--accent-bg);
@@ -812,10 +896,6 @@ summary.town-card__summary:focus-visible {
 }
 
 /* Plan your ride */
-.plan-section {
-  background: var(--white);
-}
-
 .ride-hint {
   position: absolute;
   top: 24px;
@@ -1032,27 +1112,6 @@ summary.town-card__summary:focus-visible {
   font-size: 0.85rem;
 }
 
-.plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-}
-
-.plan-card {
-  background: var(--accent-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-}
-
-.plan-card h3 {
-  font-size: 1.1rem;
-}
-
-.plan-card p {
-  color: var(--text-muted);
-  margin-bottom: 0;
-}
 
 /* Footer */
 .site-footer {

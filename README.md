@@ -34,7 +34,7 @@ or in a local `.env` file for `netlify dev` (see `.env.example`):
 
 ## Airtable schema
 
-The proxy (`netlify/functions/airtable.js`) whitelists four tables by ID and
+The proxy (`netlify/functions/airtable.js`) whitelists five tables by ID and
 exposes them at `/.netlify/functions/airtable?table=<key>`:
 
 | Query key     | Airtable table                    | Key fields used by the site |
@@ -43,11 +43,17 @@ exposes them at `/.netlify/functions/airtable?table=<key>`:
 | `communities` | Manage Trail Communities (`Communities`) | Community Name, Latitude, Longitude, Description, Niche Identity, Trail Ready Status, Website, Community Photo (AI), Amenities (linked) |
 | `amenities`   | Maintain Amenity Directory (`Amenities`) | Amenity Name, Linked Community, Category, Address, Hours, Verified |
 | `pois`        | Points of Interest                 | Name, Type, Description, Photo, GPS Coordinates, Mile Marker, Nearest Community (linked), Published |
+| `resources`   | Resources                          | Name, Link, Description, Image, Sort Order, Published |
 
 Points of Interest are trail landmarks (e.g. Benzal Bridge) that don't belong
 to a community. The proxy only returns records with **Published** checked, and
 a point needs `GPS Coordinates` ("lat, lng") to appear on the map, where it
 shows at every zoom level with an orange-ringed marker.
+
+Resources fill the Additional Resources section below Trail Towns, ordered by
+`Sort Order`. Like points of interest, only Published records are returned,
+and a resource needs a `Link` to appear. The section and its nav links stay
+hidden until at least one resource is published.
 
 The trail's actual route lives in `public/data/dht.geojson`, a single
 LineString traced from Lexa (mile 0) to Arkansas City. Each segment is drawn

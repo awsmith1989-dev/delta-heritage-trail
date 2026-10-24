@@ -1,14 +1,19 @@
-import { getMapboxToken, getTrailRoute, getTrailSegments, getCommunities, getAmenities, getPointsOfInterest } from './data.js';
-import { normalizeSegment, normalizeCommunity, normalizeAmenity, normalizePointOfInterest } from './normalize.js';
+import { getMapboxToken, getTrailRoute, getTrailSegments, getCommunities, getAmenities, getPointsOfInterest, getResources } from './data.js';
+import { normalizeSegment, normalizeCommunity, normalizeAmenity, normalizePointOfInterest, normalizeResource } from './normalize.js';
 import { buildTrailLine, locateOnTrail } from './trail-line.js';
 import { initMap } from './map.js';
 import { renderTrailTowns } from './towns.js';
 import { initRidePlanner } from './ride-planner.js';
+import { renderResources } from './resources.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupNav();
   setupSmoothScroll();
   setYear();
+
+  // Resources are independent of the trail data, so they load and render
+  // on their own without waiting on (or being blocked by) the map.
+  loadResources().then(renderResources);
 
   const [dataset, mapboxToken] = await Promise.all([loadTrailData(), loadMapboxToken()]);
 
@@ -16,6 +21,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   initMap(dataset, mapboxToken);
   renderTrailTowns(dataset);
 });
+
+async function loadResources() {
+  try {
+    const records = await getResources();
+    return records.map(normalizeResource);
+  } catch (err) {
+    console.error('Failed to load resources', err);
+    return [];
+  }
+}
 
 async function loadTrailData() {
   try {
