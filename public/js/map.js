@@ -1,5 +1,5 @@
 import { escapeHtml, escapeAttr } from './utils.js';
-import { amenityIconsHtml, amenityIconUrlForCategory, amenityListItemsHtml } from './amenity-icons.js';
+import { amenityIconsHtml, amenityIconUrlForCategory, amenityListItemsHtml, poiIconUrlForType } from './amenity-icons.js';
 import { setupOsmPoiLayer } from './osm-poi.js';
 import { locateOnTrail, sliceTrail } from './trail-line.js';
 import { toggleCommunityInRide, isCommunityInRide, onRideChange, getRideStopIds } from './ride-planner.js';
@@ -323,20 +323,16 @@ function amenityPopupHtml(amenity) {
 // table. Unlike amenity pins, these stay visible at every zoom level since
 // they're sights along the trail itself rather than in-town services.
 function addPointOfInterestMarkers(map, pointsOfInterest, communityById) {
-  const iconUrl = amenityIconUrlForCategory('Point of Interest');
-
   return pointsOfInterest.filter(hasAmenityCoordinates).map((poi) => {
     const el = document.createElement('div');
     el.className = 'poi-marker';
     el.setAttribute('aria-label', poi.name);
-    if (iconUrl) {
-      const img = document.createElement('img');
-      img.src = iconUrl;
-      img.alt = '';
-      img.width = 18;
-      img.height = 18;
-      el.appendChild(img);
-    }
+    const img = document.createElement('img');
+    img.src = poiIconUrlForType(poi.type);
+    img.alt = '';
+    img.width = 18;
+    img.height = 18;
+    el.appendChild(img);
 
     const nearestCommunity = poi.communityIds.map((id) => communityById.get(id)).find(Boolean);
     const popup = new mapboxgl.Popup({ offset: 20, maxWidth: '280px' }).setHTML(

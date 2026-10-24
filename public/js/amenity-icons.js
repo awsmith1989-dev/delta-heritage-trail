@@ -56,6 +56,18 @@ function iconFileFor(category) {
   return CATEGORY_ICONS[normalizeCategory(category)] || CATEGORY_ICONS.point_of_interest;
 }
 
+// Icons for the Points of Interest table's "Type" field. Types without
+// their own artwork use the generic point of interest icon.
+const POI_TYPE_ICONS = {
+  bridge: 'Bridge_POI.png',
+  scenic_overlook: 'Scenic_Overlook_POI.png',
+  wildlife: 'Wildlife_POI.png',
+};
+
+export function poiIconUrlForType(type) {
+  return `${ICON_BASE}/${POI_TYPE_ICONS[normalizeCategory(type)] || CATEGORY_ICONS.point_of_interest}`;
+}
+
 // Unlike iconFileFor(), this does not fall back to a default icon — it
 // returns null when a category has no matching file, so callers can decide
 // how to render amenities in categories we don't have artwork for yet.
