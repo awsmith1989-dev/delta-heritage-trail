@@ -3,18 +3,21 @@ import { escapeHtml, escapeAttr } from './utils.js';
 const ICON_BASE = '/img/amenity-icons';
 
 const CATEGORY_ICONS = {
-  accommodation: 'Accommodation.png',
+  accommodation: 'Lodging.png', // Airtable has both "Accommodation" and "Lodging"
   bike_rental: 'Bike_Rentals.png', // Airtable category is singular ("Bike Rental")
   bike_rentals: 'Bike_Rentals.png',
   bike_repair: 'Repair_Station.png', // closest match: no "Bike Repair"-named icon exists
   camping: 'Camping.png',
   food_and_beverage: 'Food_and_Beverage.png',
+  grocery_store: 'Grocery_Store.png',
+  lodging: 'Lodging.png',
   point_of_interest: 'Point_of_Interest.png',
   public_park: 'Public_Park.png',
-  rv_site: 'RV_Site.png',
+  rv_park: 'RV_Park.png',
+  rv_site: 'RV_Park.png',
   repair_station: 'Repair_Station.png',
   restrooms: 'Restrooms.png',
-  trailhead: 'Trailhead_new.png',
+  trailhead: 'Trailhead.png',
   visitor_center: 'Visitor_Center.png',
   water: 'Water.png',
 };
@@ -74,7 +77,7 @@ export function poiIconUrlForType(type) {
 // returns null when a category has no matching file, so callers can decide
 // how to render amenities in categories we don't have artwork for yet.
 export function amenityIconUrlForCategory(category) {
-  const file = CATEGORY_ICONS[normalizeCategory(category)];
+  const file = CATEGORY_ICONS[normalizeCategory(canonicalLabel(category))];
   return file ? `${ICON_BASE}/${file}` : null;
 }
 
