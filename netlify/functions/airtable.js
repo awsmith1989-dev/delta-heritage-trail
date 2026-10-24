@@ -5,10 +5,17 @@ const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 //   Segments    -> "Track Trail Segments"
 //   Communities -> "Manage Trail Communities"
 //   Amenities   -> "Maintain Amenity Directory"
+//   Points of Interest
 const ALLOWED_TABLES = {
   segments: 'tbla9jrcHD375EYO1',
   communities: 'tblA7uFLtYuWVMGGX',
   amenities: 'tbl8H94EhS1ITwvsW',
+  pois: 'tbl0tTu5ysQ1CREYO',
+};
+
+// Applied server-side so draft records never leave Airtable.
+const TABLE_FILTERS = {
+  pois: '{Published}',
 };
 
 const BASE_HEADERS = {
@@ -59,6 +66,7 @@ exports.handler = async (event) => {
       baseId: AIRTABLE_BASE_ID,
       tableId,
       view: params.view,
+      filterByFormula: TABLE_FILTERS[params.table],
     });
 
     return {
@@ -79,7 +87,7 @@ exports.handler = async (event) => {
   }
 };
 
-async function fetchAllRecords({ apiKey, baseId, tableId, view }) {
+async function fetchAllRecords({ apiKey, baseId, tableId, view, filterByFormula }) {
   const records = [];
   let offset;
 
@@ -87,6 +95,7 @@ async function fetchAllRecords({ apiKey, baseId, tableId, view }) {
     const url = new URL(`${AIRTABLE_API_URL}/${baseId}/${tableId}`);
     url.searchParams.set('pageSize', '100');
     if (view) url.searchParams.set('view', view);
+    if (filterByFormula) url.searchParams.set('filterByFormula', filterByFormula);
     if (offset) url.searchParams.set('offset', offset);
 
     const response = await fetch(url.toString(), {

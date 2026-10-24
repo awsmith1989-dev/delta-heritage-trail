@@ -13,6 +13,12 @@ export async function getMapboxToken() {
   return data.token;
 }
 
+// Traced route of the whole trail, served as a static file rather than from
+// Airtable since it only changes if the trail itself is rerouted.
+export async function getTrailRoute() {
+  return fetchJSON('/data/dht.geojson');
+}
+
 export async function getTrailSegments() {
   const data = await fetchJSON(`${FUNCTIONS_BASE}/airtable?table=segments`);
   return data.records || [];
@@ -25,5 +31,10 @@ export async function getCommunities() {
 
 export async function getAmenities() {
   const data = await fetchJSON(`${FUNCTIONS_BASE}/airtable?table=amenities`);
+  return data.records || [];
+}
+
+export async function getPointsOfInterest() {
+  const data = await fetchJSON(`${FUNCTIONS_BASE}/airtable?table=pois`);
   return data.records || [];
 }

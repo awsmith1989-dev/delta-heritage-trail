@@ -418,6 +418,28 @@ img {
   display: none;
 }
 
+/* Trail landmark marker (Points of Interest table) — larger than the
+   amenity badge with an orange ring so it reads as a sight to visit, and
+   shown at every zoom level. */
+.poi-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--accent-orange);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poi-marker img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
 /* OSM Overpass "community data" marker — small, muted, unbranded */
 .osm-poi-marker {
   display: flex;

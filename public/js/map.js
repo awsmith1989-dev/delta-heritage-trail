@@ -1,6 +1,7 @@
 import { escapeHtml, escapeAttr } from './utils.js';
 import { amenityIconsHtml, amenityIconUrlForCategory } from './amenity-icons.js';
 import { setupOsmPoiLayer } from './osm-poi.js';
+import { locateOnTrail, sliceTrail } from './trail-line.js';
 import { toggleCommunityInRide, isCommunityInRide, onRideChange, getRideStopIds } from './ride-planner.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
@@ -48,7 +49,7 @@ export function initMap(dataset, mapboxToken) {
   map.on('load', () => {
     const communityById = new Map(dataset.communities.map((c) => [c.id, c]));
     const locatedCommunities = dataset.communities.filter(hasCoordinates);
-    const segmentLines = buildSegmentLines(dataset.segments, communityById);
+    const segmentLines = buildSegmentLines(dataset.segments, communityById, dataset.trailLine);
 
     if (!segmentLines.length && !locatedCommunities.length) {
       setStatus(
@@ -70,6 +71,7 @@ export function initMap(dataset, mapboxToken) {
     addRideHighlightLayer(map, segmentLines);
     addCommunityMarkers(map, locatedCommunities, dataset.amenities);
     addAmenityMarkers(map, dataset.amenities);
+    addPointOfInterestMarkers(map, dataset.pointsOfInterest, communityById);
     fitToData(map, segmentLines, locatedCommunities);
     setupOsmPoiLayer(map);
   });
@@ -79,13 +81,24 @@ function hasCoordinates(community) {
   return Number.isFinite(community.lat) && Number.isFinite(community.lng);
 }
 
-function buildSegmentLines(segments, communityById) {
+// Each segment is drawn along the traced trail route between its linked
+// towns. Without the route, it falls back to straight lines between towns.
+function buildSegmentLines(segments, communityById, trailLine) {
   return segments
     .map((segment) => {
       const points = segment.communityIds
         .map((id) => communityById.get(id))
         .filter((c) => c && hasCoordinates(c));
       if (points.length < 2) return null;
+
+      if (trailLine) {
+        const miles = points.map((p) => locateOnTrail(trailLine, p.lng, p.lat).mile);
+        return {
+          ...segment,
+          coordinates: sliceTrail(trailLine, Math.min(...miles), Math.max(...miles)),
+        };
+      }
+
       const sorted = [...points].sort((a, b) => b.lat - a.lat);
       return {
         ...segment,
@@ -288,6 +301,54 @@ function amenityPopupHtml(amenity) {
       <h3>${escapeHtml(amenity.name)}</h3>
       <p class="map-popup__amenities-label">${escapeHtml(amenity.category || 'Amenity')}</p>
       ${amenity.mapsUrl ? `<a class="map-popup__link" href="${escapeAttr(amenity.mapsUrl)}" target="_blank" rel="noopener">View on Google Maps</a>` : ''}
+    </div>
+  `;
+}
+
+// Trail landmarks (bridges, historic sites, etc.) from the Points of Interest
+// table. Unlike amenity pins, these stay visible at every zoom level since
+// they're sights along the trail itself rather than in-town services.
+function addPointOfInterestMarkers(map, pointsOfInterest, communityById) {
+  const iconUrl = amenityIconUrlForCategory('Point of Interest');
+
+  return pointsOfInterest.filter(hasAmenityCoordinates).map((poi) => {
+    const el = document.createElement('div');
+    el.className = 'poi-marker';
+    el.setAttribute('aria-label', poi.name);
+    if (iconUrl) {
+      const img = document.createElement('img');
+      img.src = iconUrl;
+      img.alt = '';
+      img.width = 18;
+      img.height = 18;
+      el.appendChild(img);
+    }
+
+    const nearestCommunity = poi.communityIds.map((id) => communityById.get(id)).find(Boolean);
+    const popup = new mapboxgl.Popup({ offset: 20, maxWidth: '280px' }).setHTML(
+      poiPopupHtml(poi, nearestCommunity)
+    );
+
+    return new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([poi.lng, poi.lat])
+      .setPopup(popup)
+      .addTo(map);
+  });
+}
+
+function poiPopupHtml(poi, nearestCommunity) {
+  const details = [
+    poi.type,
+    poi.mileMarker != null ? `Mile ${poi.mileMarker}` : '',
+    nearestCommunity ? `Near ${nearestCommunity.name}` : '',
+  ].filter(Boolean);
+
+  return `
+    <div class="map-popup">
+      <h3>${escapeHtml(poi.name)}</h3>
+      ${details.length ? `<p class="map-popup__amenities-label">${escapeHtml(details.join(' · '))}</p>` : ''}
+      ${poi.photo ? `<img class="map-popup__photo" src="${escapeAttr(poi.photo)}" alt="${escapeAttr(poi.name)}" />` : ''}
+      ${poi.description ? `<p>${escapeHtml(poi.description)}</p>` : ''}
     </div>
   `;
 }

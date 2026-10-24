@@ -34,7 +34,7 @@ or in a local `.env` file for `netlify dev` (see `.env.example`):
 
 ## Airtable schema
 
-The proxy (`netlify/functions/airtable.js`) whitelists three tables by ID and
+The proxy (`netlify/functions/airtable.js`) whitelists four tables by ID and
 exposes them at `/.netlify/functions/airtable?table=<key>`:
 
 | Query key     | Airtable table                    | Key fields used by the site |
@@ -42,11 +42,24 @@ exposes them at `/.netlify/functions/airtable?table=<key>`:
 | `segments`    | Track Trail Segments (`Segments`)  | Segment Name, Distance in Miles, Status, Communities (linked) |
 | `communities` | Manage Trail Communities (`Communities`) | Community Name, Latitude, Longitude, Description, Niche Identity, Trail Ready Status, Website, Community Photo (AI), Amenities (linked) |
 | `amenities`   | Maintain Amenity Directory (`Amenities`) | Amenity Name, Linked Community, Category, Address, Hours, Verified |
+| `pois`        | Points of Interest                 | Name, Type, Description, Photo, GPS Coordinates, Mile Marker, Nearest Community (linked), Published |
 
-The frontend builds each trail segment's line geometry by joining a segment's
-linked `Communities` records to their `Latitude`/`Longitude`. **Populate
-Latitude and Longitude on the Communities table** for the map to draw the
-trail path and place town markers — until then, the map shows a friendly
+Points of Interest are trail landmarks (e.g. Benzal Bridge) that don't belong
+to a community. The proxy only returns records with **Published** checked, and
+a point needs `GPS Coordinates` ("lat, lng") to appear on the map, where it
+shows at every zoom level with an orange-ringed marker.
+
+The trail's actual route lives in `public/data/dht.geojson`, a single
+LineString traced from Lexa (mile 0) to Arkansas City. Each segment is drawn
+along the stretch of that route between its linked `Communities`, located by
+their `Latitude`/`Longitude` (see `public/js/trail-line.js`). If the route
+file fails to load, segments fall back to straight lines between towns.
+Points of interest without a `Mile Marker` get one computed from their
+position on the route, and any more than half a mile off the route log a
+console warning.
+
+**Populate Latitude and Longitude on the Communities table** for the map to
+draw the trail path and place town markers — until then, the map shows a friendly
 empty state and the rest of the site still works from the other fields.
 
 The map draws every segment as a single solid green line, regardless of its

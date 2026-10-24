@@ -1,5 +1,6 @@
-import { getMapboxToken, getTrailSegments, getCommunities, getAmenities } from './data.js';
-import { normalizeSegment, normalizeCommunity, normalizeAmenity } from './normalize.js';
+import { getMapboxToken, getTrailRoute, getTrailSegments, getCommunities, getAmenities, getPointsOfInterest } from './data.js';
+import { normalizeSegment, normalizeCommunity, normalizeAmenity, normalizePointOfInterest } from './normalize.js';
+import { buildTrailLine, locateOnTrail } from './trail-line.js';
 import { initMap } from './map.js';
 import { renderTrailTowns } from './towns.js';
 import { initRidePlanner } from './ride-planner.js';
@@ -18,22 +19,60 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadTrailData() {
   try {
-    const [segmentRecords, communityRecords, amenityRecords] = await Promise.all([
+    const [segmentRecords, communityRecords, amenityRecords, poiRecords, trailRoute] = await Promise.all([
       getTrailSegments(),
       getCommunities(),
       getAmenities(),
+      // Points of interest are optional extras; don't let them take down the
+      // rest of the trail data if that table fails to load.
+      getPointsOfInterest().catch((err) => {
+        console.error('Failed to load points of interest', err);
+        return [];
+      }),
+      // Without the traced route the map falls back to straight lines
+      // between towns, so this is optional too.
+      getTrailRoute().catch((err) => {
+        console.error('Failed to load trail route', err);
+        return null;
+      }),
     ]);
+
+    const trailLine = trailRoute ? buildTrailLine(trailRoute) : null;
 
     return {
       segments: segmentRecords.map(normalizeSegment),
       communities: communityRecords.map(normalizeCommunity),
       amenities: amenityRecords.map(normalizeAmenity),
+      pointsOfInterest: placePointsOnTrail(poiRecords.map(normalizePointOfInterest), trailLine),
+      trailLine,
       error: null,
     };
   } catch (err) {
     console.error('Failed to load trail data', err);
-    return { segments: [], communities: [], amenities: [], error: err };
+    return { segments: [], communities: [], amenities: [], pointsOfInterest: [], trailLine: null, error: err };
   }
+}
+
+// Anything farther than this from the traced route is probably a mistyped
+// coordinate rather than a real off-trail landmark.
+const OFF_TRAIL_WARNING_MILES = 0.5;
+
+// Fills in a trail mile for points of interest that don't have a Mile Marker
+// set in Airtable, and flags any that sit suspiciously far from the trail.
+function placePointsOnTrail(pointsOfInterest, trailLine) {
+  if (!trailLine) return pointsOfInterest;
+
+  return pointsOfInterest.map((poi) => {
+    if (!Number.isFinite(poi.lat) || !Number.isFinite(poi.lng)) return poi;
+
+    const { mile, offTrailMiles } = locateOnTrail(trailLine, poi.lng, poi.lat);
+    if (offTrailMiles > OFF_TRAIL_WARNING_MILES) {
+      console.warn(
+        `Point of interest "${poi.name}" is ${offTrailMiles.toFixed(1)} miles from the trail. Check its GPS Coordinates in Airtable.`
+      );
+    }
+    return poi.mileMarker != null ? poi : { ...poi, mileMarker: Math.round(mile * 10) / 10 };
+  });
 }
 
 async function loadMapboxToken() {

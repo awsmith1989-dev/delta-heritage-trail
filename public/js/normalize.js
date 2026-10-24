@@ -82,3 +82,20 @@ export function normalizeAmenity(record) {
     lng,
   };
 }
+
+export function normalizePointOfInterest(record) {
+  const f = record.fields || {};
+  const { lat, lng } = parseGpsCoordinates(f['GPS Coordinates']);
+  return {
+    id: record.id,
+    name: f['Name'] || 'Point of Interest',
+    type: f['Type'] || '',
+    description: f['Description'] || '',
+    photo: extractImageUrl(f['Photo']),
+    mileMarker: toFiniteNumber(f['Mile Marker']),
+    segmentIds: Array.isArray(f['Trail Segment']) ? f['Trail Segment'] : [],
+    communityIds: Array.isArray(f['Nearest Community']) ? f['Nearest Community'] : [],
+    lat,
+    lng,
+  };
+}
