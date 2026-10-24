@@ -68,7 +68,7 @@ export function initMap(dataset, mapboxToken) {
     }
 
     addSegmentLayer(map, segmentLines);
-    addRideHighlightLayer(map, segmentLines);
+    addRideHighlightLayer(map, segmentLines, dataset.trailLine, communityById);
     addCommunityMarkers(map, locatedCommunities, dataset.amenities);
     addAmenityMarkers(map, dataset.amenities);
     addPointOfInterestMarkers(map, dataset.pointsOfInterest, communityById);
@@ -143,7 +143,7 @@ function addSegmentLayer(map, segmentLines) {
   });
 }
 
-function addRideHighlightLayer(map, segmentLines) {
+function addRideHighlightLayer(map, segmentLines, trailLine, communityById) {
   map.addSource('trail-segment-highlight', {
     type: 'geojson',
     data: { type: 'FeatureCollection', features: [] },
@@ -159,6 +159,25 @@ function addRideHighlightLayer(map, segmentLines) {
 
   onRideChange(() => {
     const stopIds = getRideStopIds();
+
+    // With the traced route, highlight exactly the stretch between the
+    // ride's first and last stops, even if they fall mid-segment.
+    if (trailLine) {
+      const miles = [...stopIds]
+        .map((id) => communityById.get(id))
+        .filter((c) => c && hasCoordinates(c))
+        .map((c) => locateOnTrail(trailLine, c.lng, c.lat).mile);
+      const features = miles.length >= 2
+        ? [{
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'LineString', coordinates: sliceTrail(trailLine, Math.min(...miles), Math.max(...miles)) },
+          }]
+        : [];
+      map.getSource('trail-segment-highlight').setData({ type: 'FeatureCollection', features });
+      return;
+    }
+
     const features = segmentLines
       .filter((s) => s.communityIds.every((id) => stopIds.has(id)))
       .map((s) => ({

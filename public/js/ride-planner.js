@@ -1,5 +1,6 @@
 import { escapeHtml, escapeAttr } from './utils.js';
 import { amenityIconsHtml, amenityListItemsHtml } from './amenity-icons.js';
+import { locateOnTrail } from './trail-line.js';
 
 const state = {
   dataset: null,
@@ -13,7 +14,9 @@ const listeners = new Set();
 
 export function initRidePlanner(dataset) {
   state.dataset = dataset;
-  const { order, cumDistance } = buildTrailOrder(dataset.segments, dataset.communities);
+  const { order, cumDistance } = dataset.trailLine
+    ? buildTrailOrderFromRoute(dataset.trailLine, dataset.communities)
+    : buildTrailOrder(dataset.segments, dataset.communities);
   state.trailOrder = order;
   state.cumDistance = cumDistance;
   state.selectedIds = [];
@@ -25,6 +28,25 @@ export function initRidePlanner(dataset) {
 // The trail is a single unbranched path, so "planning a ride" just means
 // picking two or more stops on that path — the rider passes through
 // everything in between regardless of what they explicitly clicked.
+//
+// With the traced route available, every located town is placed by its
+// trail mile, so stops and distances don't depend on how segments are
+// linked in Airtable.
+function buildTrailOrderFromRoute(trailLine, communities) {
+  const placed = communities
+    .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lng))
+    .map((c) => ({ community: c, mile: locateOnTrail(trailLine, c.lng, c.lat).mile }))
+    .sort((a, b) => a.mile - b.mile);
+
+  return {
+    order: placed.map((p) => p.community),
+    cumDistance: placed.map((p) => p.mile),
+  };
+}
+
+// Fallback when the route file is unavailable: walk the chain of two-town
+// segments. A segment linked to more than two towns is skipped, which
+// breaks the chain there.
 function buildTrailOrder(segments, communities) {
   const communityById = new Map(communities.map((c) => [c.id, c]));
   const adjacency = new Map();

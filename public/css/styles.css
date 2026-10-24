@@ -634,6 +634,8 @@ img {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
+  /* Expanding one card shouldn't stretch the others in its row. */
+  align-items: start;
 }
 
 .towns-grid__message {
@@ -655,7 +657,7 @@ img {
 
 .town-card__media {
   position: relative;
-  height: 150px;
+  aspect-ratio: 4 / 3;
   background: linear-gradient(135deg, var(--forest-dark), var(--forest-light));
   background-size: cover;
   background-position: center;
@@ -690,11 +692,83 @@ img {
   color: var(--white);
 }
 
-.town-card__body {
-  padding: 20px;
-  flex: 1;
+/* Town name set over the bottom of the photo, on a dark fade so it stays
+   legible on light images. */
+.town-card__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 40px 20px 14px;
+  color: var(--white);
+  font-size: 1.35rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.town-card__summary {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+}
+
+.town-card__summary .amenity-icons {
+  margin: 0;
+  gap: 6px;
+}
+
+summary.town-card__summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+summary.town-card__summary::-webkit-details-marker {
+  display: none;
+}
+
+summary.town-card__summary:focus-visible {
+  outline: 2px solid var(--forest-light);
+  outline-offset: -2px;
+}
+
+.town-card__toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--forest-dark);
+}
+
+.town-card__toggle::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.town-card__details[open] .town-card__toggle::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+.town-card__body {
+  padding: 4px 20px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.town-card__body > :first-child {
+  margin-top: 12px;
+}
+
+.town-card__body > :last-child {
+  margin-bottom: 0;
 }
 
 .town-card__niche {
@@ -732,7 +806,7 @@ img {
 }
 
 .town-card__link {
-  margin-top: auto;
+  display: inline-block;
   font-weight: 600;
   text-decoration: none;
 }
