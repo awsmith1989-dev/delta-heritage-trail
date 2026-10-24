@@ -14,7 +14,7 @@ const CATEGORY_ICONS = {
   rv_site: 'RV_Site.png',
   repair_station: 'Repair_Station.png',
   restrooms: 'Restrooms.png',
-  trailhead: 'Trailhead.png',
+  trailhead: 'Trailhead_new.png',
   visitor_center: 'Visitor_Center.png',
   water: 'Water.png',
 };
@@ -61,6 +61,7 @@ function iconFileFor(category) {
 // their own artwork use the generic point of interest icon.
 const POI_TYPE_ICONS = {
   bridge: 'Bridge_POI.png',
+  historic_site: 'Historic_site.png',
   scenic_overlook: 'Scenic_Overlook_POI.png',
   wildlife: 'Wildlife_POI.png',
 };
