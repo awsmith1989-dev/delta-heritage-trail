@@ -77,6 +77,7 @@ export function normalizeAmenity(record) {
     phone: f['Phone'] || '',
     hours: f['Hours'] || '',
     additionalAmenities: Array.isArray(f['Additional Amenities']) ? f['Additional Amenities'] : [],
+    photo: extractImageUrl(f['Amenity Photo (AI)']),
     verified: Boolean(f['Verified']),
     notes: f['Notes'] || '',
     lat,

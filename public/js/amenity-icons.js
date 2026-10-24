@@ -14,6 +14,7 @@ const CATEGORY_ICONS = {
   rv_site: 'RV_Site.png',
   repair_station: 'Repair_Station.png',
   restrooms: 'Restrooms.png',
+  trailhead: 'Trailhead.png',
   visitor_center: 'Visitor_Center.png',
   water: 'Water.png',
 };

@@ -314,6 +314,7 @@ function amenityPopupHtml(amenity) {
     <div class="map-popup">
       <h3>${escapeHtml(amenity.name)}</h3>
       <p class="map-popup__amenities-label">${escapeHtml(amenity.category || 'Amenity')}</p>
+      ${amenity.photo ? `<img class="map-popup__photo" src="${escapeAttr(amenity.photo)}" alt="${escapeAttr(amenity.name)}" />` : ''}
       ${amenity.mapsUrl ? `<a class="map-popup__link" href="${escapeAttr(amenity.mapsUrl)}" target="_blank" rel="noopener">View on Google Maps</a>` : ''}
     </div>
   `;
