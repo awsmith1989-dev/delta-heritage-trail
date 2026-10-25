@@ -28,7 +28,7 @@ function compareResources(a, b) {
 function resourceCard(resource) {
   return `
     <a class="resource-card" href="${escapeAttr(resource.url)}" target="_blank" rel="noopener">
-      ${resource.image ? `<div class="resource-card__logo"><img src="${escapeAttr(resource.image)}" alt="" loading="lazy" /></div>` : ''}
+      ${resource.image ? `<div class="resource-card__image"><img src="${escapeAttr(resource.image)}" alt="" loading="lazy" /></div>` : ''}
       <div class="resource-card__body">
         <h3>${escapeHtml(resource.name)}</h3>
         ${resource.description ? `<p>${escapeHtml(resource.description)}</p>` : ''}

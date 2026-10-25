@@ -727,24 +727,19 @@ img {
   outline-offset: 3px;
 }
 
-/* Logo strip: the whole logo stays visible (never cropped) and sits
-   centered on the brand green, which suits the light-colored logos these
-   organizations use on dark backgrounds. Cards without an image simply
-   skip it. Padding is tight because the uploaded logos already carry
-   transparent margins of their own. */
-.resource-card__logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 140px;
-  padding: 6px 24px;
-  background: var(--forest-dark);
+/* Full-bleed 16:9 image across the top of the card. The uploaded images
+   are photos with the organization's logo built in, so nothing sits behind
+   or on top of them. Cards without an image simply skip it. */
+.resource-card__image {
+  aspect-ratio: 16 / 9;
+  background: var(--accent-bg);
 }
 
-.resource-card__logo img {
+.resource-card__image img {
+  display: block;
+  width: 100%;
   height: 100%;
-  max-width: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .resource-card__body {
