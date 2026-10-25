@@ -34,7 +34,7 @@ or in a local `.env` file for `netlify dev` (see `.env.example`):
 
 ## Airtable schema
 
-The proxy (`netlify/functions/airtable.js`) whitelists five tables by ID and
+The proxy (`netlify/functions/airtable.js`) whitelists six tables by ID and
 exposes them at `/.netlify/functions/airtable?table=<key>`:
 
 | Query key     | Airtable table                    | Key fields used by the site |
@@ -44,6 +44,7 @@ exposes them at `/.netlify/functions/airtable?table=<key>`:
 | `amenities`   | Maintain Amenity Directory (`Amenities`) | Amenity Name, Linked Community, Category, Address, Hours, Verified |
 | `pois`        | Points of Interest                 | Name, Type, Description, Photo, GPS Coordinates, Mile Marker, Nearest Community (linked), Published |
 | `resources`   | Resources                          | Name, Link, Description, Image, Sort Order, Published |
+| `routes`      | Favorite Routes                    | Name, Link, Card Image, Title (Link), Status |
 
 Points of Interest are trail landmarks (e.g. Benzal Bridge) that don't belong
 to a community. The proxy only returns records with **Published** checked, and
@@ -54,6 +55,11 @@ Resources fill the Additional Resources section below Trail Towns, ordered by
 `Sort Order`. Like points of interest, only Published records are returned,
 and a resource needs a `Link` to appear. The section and its nav links stay
 hidden until at least one resource is published.
+
+Favorite Routes fill the Our Favorite Routes section between Trail Towns and
+Resources. Each Card Image is a finished design, so the card is just that
+image linking to the route's blog post. Only routes with `Status` = Done are
+returned, and a route needs both a `Link` and a `Card Image` to appear.
 
 The trail's actual route lives in `public/data/dht.geojson`, a single
 LineString traced from Lexa (mile 0) to Arkansas City. Each segment is drawn

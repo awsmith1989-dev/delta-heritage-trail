@@ -631,9 +631,57 @@ img {
   overscroll-behavior: contain;
 }
 
-/* Additional resources */
-.resources-section {
+/* Favorite routes */
+.routes-section {
   background: var(--white);
+}
+
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+
+@media (max-width: 720px) {
+  .routes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The card is the image itself: each Card Image is a finished 16:9 design
+   with its own title and arrow, so nothing is layered on top. */
+.route-card {
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--accent-bg);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.route-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.route-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px -14px rgba(26, 92, 56, 0.45);
+}
+
+.route-card:focus-visible {
+  outline: 3px solid var(--forest-light);
+  outline-offset: 3px;
+}
+
+/* Additional resources */
+/* Pale green so sections keep alternating: towns (green), routes (white),
+   resources (green). */
+.resources-section {
+  background: var(--accent-bg);
 }
 
 /* Fixed column counts (3 / 2 / 1) so rows fill evenly. */

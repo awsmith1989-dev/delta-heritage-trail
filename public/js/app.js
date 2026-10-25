@@ -1,18 +1,20 @@
-import { getMapboxToken, getTrailRoute, getTrailSegments, getCommunities, getAmenities, getPointsOfInterest, getResources } from './data.js';
-import { normalizeSegment, normalizeCommunity, normalizeAmenity, normalizePointOfInterest, normalizeResource } from './normalize.js';
+import { getMapboxToken, getTrailRoute, getTrailSegments, getCommunities, getAmenities, getPointsOfInterest, getResources, getFavoriteRoutes } from './data.js';
+import { normalizeSegment, normalizeCommunity, normalizeAmenity, normalizePointOfInterest, normalizeResource, normalizeFavoriteRoute } from './normalize.js';
 import { buildTrailLine, locateOnTrail } from './trail-line.js';
 import { initMap } from './map.js';
 import { renderTrailTowns } from './towns.js';
 import { initRidePlanner } from './ride-planner.js';
 import { renderResources } from './resources.js';
+import { renderFavoriteRoutes } from './routes.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupNav();
   setupSmoothScroll();
   setYear();
 
-  // Resources are independent of the trail data, so they load and render
-  // on their own without waiting on (or being blocked by) the map.
+  // Routes and resources are independent of the trail data, so they load
+  // and render on their own without waiting on (or being blocked by) the map.
+  loadFavoriteRoutes().then(renderFavoriteRoutes);
   loadResources().then(renderResources);
 
   const [dataset, mapboxToken] = await Promise.all([loadTrailData(), loadMapboxToken()]);
@@ -21,6 +23,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   initMap(dataset, mapboxToken);
   renderTrailTowns(dataset);
 });
+
+async function loadFavoriteRoutes() {
+  try {
+    const records = await getFavoriteRoutes();
+    return records.map(normalizeFavoriteRoute);
+  } catch (err) {
+    console.error('Failed to load favorite routes', err);
+    return [];
+  }
+}
 
 async function loadResources() {
   try {

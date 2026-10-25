@@ -113,3 +113,14 @@ export function normalizeResource(record) {
     sortOrder: toFiniteNumber(f['Sort Order']),
   };
 }
+
+export function normalizeFavoriteRoute(record) {
+  const f = record.fields || {};
+  return {
+    id: record.id,
+    name: f['Name'] || '',
+    title: extractText(f['Title (Link)']),
+    url: f['Link'] || '',
+    image: extractImageUrl(f['Card Image']),
+  };
+}

@@ -7,18 +7,21 @@ const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 //   Amenities   -> "Maintain Amenity Directory"
 //   Points of Interest
 //   Resources
+//   Favorite Routes
 const ALLOWED_TABLES = {
   segments: 'tbla9jrcHD375EYO1',
   communities: 'tblA7uFLtYuWVMGGX',
   amenities: 'tbl8H94EhS1ITwvsW',
   pois: 'tbl0tTu5ysQ1CREYO',
   resources: 'tblydhPAemL5p1w0D',
+  routes: 'tblB9lu49JYcKllu1',
 };
 
 // Applied server-side so draft records never leave Airtable.
 const TABLE_FILTERS = {
   pois: '{Published}',
   resources: '{Published}',
+  routes: "{Status} = 'Done'",
 };
 
 const BASE_HEADERS = {

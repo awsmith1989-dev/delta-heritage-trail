@@ -43,3 +43,8 @@ export async function getResources() {
   const data = await fetchJSON(`${FUNCTIONS_BASE}/airtable?table=resources`);
   return data.records || [];
 }
+
+export async function getFavoriteRoutes() {
+  const data = await fetchJSON(`${FUNCTIONS_BASE}/airtable?table=routes`);
+  return data.records || [];
+}
