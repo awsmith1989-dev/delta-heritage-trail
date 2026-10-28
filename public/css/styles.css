@@ -434,6 +434,11 @@ img {
   justify-content: center;
 }
 
+.poi-marker--selected {
+  border-color: var(--forest-dark);
+  box-shadow: 0 0 0 3px rgba(193, 89, 46, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
 .poi-marker img {
   width: 18px;
   height: 18px;
@@ -1088,6 +1093,11 @@ summary.town-card__summary:focus-visible {
   border-color: var(--forest-dark);
   color: var(--forest-dark);
   background: var(--white);
+}
+
+/* Landmark stops get the orange accent used on their map markers. */
+.ride-planner__stop--poi.ride-planner__stop--selected {
+  border-color: var(--accent-orange);
 }
 
 .ride-planner__stop-badge {

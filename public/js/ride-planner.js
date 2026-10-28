@@ -15,7 +15,7 @@ const listeners = new Set();
 export function initRidePlanner(dataset) {
   state.dataset = dataset;
   const { order, cumDistance } = dataset.trailLine
-    ? buildTrailOrderFromRoute(dataset.trailLine, dataset.communities)
+    ? buildTrailOrderFromRoute(dataset.trailLine, dataset.communities, dataset.pointsOfInterest)
     : buildTrailOrder(dataset.segments, dataset.communities);
   state.trailOrder = order;
   state.cumDistance = cumDistance;
@@ -29,24 +29,30 @@ export function initRidePlanner(dataset) {
 // picking two or more stops on that path — the rider passes through
 // everything in between regardless of what they explicitly clicked.
 //
-// With the traced route available, every located town is placed by its
-// trail mile, so stops and distances don't depend on how segments are
-// linked in Airtable.
-function buildTrailOrderFromRoute(trailLine, communities) {
-  const placed = communities
-    .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lng))
-    .map((c) => ({ community: c, mile: locateOnTrail(trailLine, c.lng, c.lat).mile }))
+// With the traced route available, every located town and point of
+// interest is placed by its trail mile, so stops and distances don't depend
+// on how segments are linked in Airtable, and a ride can start or end at a
+// landmark between towns (e.g. Watson to the Benzal Bridge).
+function buildTrailOrderFromRoute(trailLine, communities, pointsOfInterest) {
+  const located = [
+    ...communities.map((c) => ({ ...c, kind: 'community' })),
+    ...pointsOfInterest.map((p) => ({ ...p, kind: 'poi' })),
+  ].filter((stop) => Number.isFinite(stop.lat) && Number.isFinite(stop.lng));
+
+  const placed = located
+    .map((stop) => ({ stop, mile: locateOnTrail(trailLine, stop.lng, stop.lat).mile }))
     .sort((a, b) => a.mile - b.mile);
 
   return {
-    order: placed.map((p) => p.community),
+    order: placed.map((p) => p.stop),
     cumDistance: placed.map((p) => p.mile),
   };
 }
 
 // Fallback when the route file is unavailable: walk the chain of two-town
 // segments. A segment linked to more than two towns is skipped, which
-// breaks the chain there.
+// breaks the chain there. Points of interest can't be placed without the
+// route, so only towns are plannable here.
 function buildTrailOrder(segments, communities) {
   const communityById = new Map(communities.map((c) => [c.id, c]));
   const adjacency = new Map();
@@ -75,7 +81,7 @@ function buildTrailOrder(segments, communities) {
 
   while (current && !visited.has(current)) {
     visited.add(current);
-    order.push(communityById.get(current));
+    order.push({ ...communityById.get(current), kind: 'community' });
     cumDistance.push(distanceSoFar);
 
     const next = (adjacency.get(current) || []).find((n) => n.id !== previous);
@@ -87,15 +93,17 @@ function buildTrailOrder(segments, communities) {
   return { order, cumDistance };
 }
 
-export function toggleCommunityInRide(communityId) {
-  const idx = state.selectedIds.indexOf(communityId);
-  if (idx === -1) state.selectedIds.push(communityId);
+// Stops are towns or points of interest, keyed by Airtable record ID (unique
+// across tables, so the two share one ID space).
+export function toggleStopInRide(stopId) {
+  const idx = state.selectedIds.indexOf(stopId);
+  if (idx === -1) state.selectedIds.push(stopId);
   else state.selectedIds.splice(idx, 1);
   notify();
 }
 
-function removeCommunityFromRide(communityId) {
-  state.selectedIds = state.selectedIds.filter((id) => id !== communityId);
+function removeStopFromRide(stopId) {
+  state.selectedIds = state.selectedIds.filter((id) => id !== stopId);
   notify();
 }
 
@@ -110,8 +118,14 @@ function toggleMinimized() {
   render();
 }
 
-export function isCommunityInRide(communityId) {
-  return state.selectedIds.includes(communityId);
+export function isStopInRide(stopId) {
+  return state.selectedIds.includes(stopId);
+}
+
+// Whether a stop can be added to a ride — points of interest only can when
+// the traced route is available to place them.
+export function isPlannableStop(stopId) {
+  return state.trailOrder.some((s) => s.id === stopId);
 }
 
 // Fires immediately with the current selection, then again on every change,
@@ -135,7 +149,7 @@ function setupControls() {
     listEl.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-ride-remove]');
       if (!btn) return;
-      removeCommunityFromRide(btn.getAttribute('data-ride-remove'));
+      removeStopFromRide(btn.getAttribute('data-ride-remove'));
     });
   }
 
@@ -160,16 +174,26 @@ function getRideRange() {
 
   return {
     stops: state.trailOrder.slice(minIdx, maxIdx + 1),
+    startMile: state.cumDistance[minIdx],
+    endMile: state.cumDistance[maxIdx],
     distance: state.cumDistance[maxIdx] - state.cumDistance[minIdx],
   };
 }
 
-// The set of community IDs the current ride passes through, including
+// The set of stop IDs the current ride passes through, including
 // pass-through towns between selected stops — used to highlight the
-// matching trail segments on the map.
+// matching trail segments on the map when there's no traced route.
 export function getRideStopIds() {
   const range = getRideRange();
   return new Set(range ? range.stops.map((c) => c.id) : []);
+}
+
+// Trail miles of the ride's first and last stops (only meaningful with the
+// traced route), or null until at least two distinct stops are picked.
+export function getRideMileRange() {
+  const range = getRideRange();
+  if (!range || range.stops.length < 2) return null;
+  return { from: range.startMile, to: range.endMile };
 }
 
 function render() {
@@ -201,7 +225,7 @@ function render() {
   const range = getRideRange();
 
   if (!range) {
-    listEl.innerHTML = '<li class="ride-planner__empty">Those towns aren&rsquo;t on a connected stretch of trail yet.</li>';
+    listEl.innerHTML = '<li class="ride-planner__empty">Those stops aren&rsquo;t on a connected stretch of trail yet.</li>';
     distanceEl.textContent = '0';
     amenitiesEl.innerHTML = '';
     if (miniSummaryEl) miniSummaryEl.textContent = '';
@@ -210,12 +234,16 @@ function render() {
 
   const startId = state.selectedIds[0];
 
-  listEl.innerHTML = range.stops
+  // Pass-through towns are listed so riders see where they can stop, but
+  // pass-through landmarks are left out to keep the list short.
+  const listedStops = range.stops.filter((s) => s.kind === 'community' || state.selectedIds.includes(s.id));
+
+  listEl.innerHTML = listedStops
     .map((c) => {
       const isStart = c.id === startId;
       const isSelected = state.selectedIds.includes(c.id);
       return `
-        <li class="ride-planner__stop${isSelected ? ' ride-planner__stop--selected' : ''}">
+        <li class="ride-planner__stop${isSelected ? ' ride-planner__stop--selected' : ''}${c.kind === 'poi' ? ' ride-planner__stop--poi' : ''}">
           <span class="ride-planner__stop-name">${escapeHtml(c.name)}</span>
           ${isStart ? '<span class="ride-planner__stop-badge">Start</span>' : ''}
           ${
@@ -228,8 +256,9 @@ function render() {
     })
     .join('');
 
+  const townsInRange = range.stops.filter((s) => s.kind === 'community');
   const amenitiesInRange = state.dataset.amenities.filter((a) =>
-    range.stops.some((c) => a.communityIds.includes(c.id))
+    townsInRange.some((c) => a.communityIds.includes(c.id))
   );
 
   distanceEl.textContent = formatMiles(range.distance);
@@ -242,7 +271,7 @@ function render() {
   if (amenitiesInRange.length) {
     const listHtml = amenityListItemsHtml(amenitiesInRange, {
       metaFor: (a) => {
-        const town = range.stops.find((c) => a.communityIds.includes(c.id));
+        const town = townsInRange.find((c) => a.communityIds.includes(c.id));
         return [a.category, town?.name].filter(Boolean).join(' · ');
       },
     });

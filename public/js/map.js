@@ -2,7 +2,7 @@ import { escapeHtml, escapeAttr } from './utils.js';
 import { amenityIconsHtml, amenityIconUrlForCategory, amenityListItemsHtml, poiIconUrlForType } from './amenity-icons.js';
 import { setupOsmPoiLayer } from './osm-poi.js';
 import { locateOnTrail, sliceTrail } from './trail-line.js';
-import { toggleCommunityInRide, isCommunityInRide, onRideChange, getRideStopIds } from './ride-planner.js';
+import { toggleStopInRide, isStopInRide, isPlannableStop, onRideChange, getRideStopIds, getRideMileRange } from './ride-planner.js';
 
 const DEFAULT_CENTER = [-91.13, 34.35]; // Arkansas Delta, Phillips/Desha counties
 const DEFAULT_ZOOM = 9;
@@ -68,7 +68,8 @@ export function initMap(dataset, mapboxToken) {
     }
 
     addSegmentLayer(map, segmentLines);
-    addRideHighlightLayer(map, segmentLines, dataset.trailLine, communityById);
+    addRideHighlightLayer(map, segmentLines, dataset.trailLine);
+    setupRideToggles(map);
     addCommunityMarkers(map, locatedCommunities, dataset.amenities);
     addAmenityMarkers(map, dataset.amenities);
     addPointOfInterestMarkers(map, dataset.pointsOfInterest, communityById);
@@ -143,7 +144,7 @@ function addSegmentLayer(map, segmentLines) {
   });
 }
 
-function addRideHighlightLayer(map, segmentLines, trailLine, communityById) {
+function addRideHighlightLayer(map, segmentLines, trailLine) {
   map.addSource('trail-segment-highlight', {
     type: 'geojson',
     data: { type: 'FeatureCollection', features: [] },
@@ -158,26 +159,23 @@ function addRideHighlightLayer(map, segmentLines, trailLine, communityById) {
   });
 
   onRideChange(() => {
-    const stopIds = getRideStopIds();
-
     // With the traced route, highlight exactly the stretch between the
-    // ride's first and last stops, even if they fall mid-segment.
+    // ride's first and last stops, even if they fall mid-segment or are
+    // points of interest between towns.
     if (trailLine) {
-      const miles = [...stopIds]
-        .map((id) => communityById.get(id))
-        .filter((c) => c && hasCoordinates(c))
-        .map((c) => locateOnTrail(trailLine, c.lng, c.lat).mile);
-      const features = miles.length >= 2
+      const miles = getRideMileRange();
+      const features = miles
         ? [{
             type: 'Feature',
             properties: {},
-            geometry: { type: 'LineString', coordinates: sliceTrail(trailLine, Math.min(...miles), Math.max(...miles)) },
+            geometry: { type: 'LineString', coordinates: sliceTrail(trailLine, miles.from, miles.to) },
           }]
         : [];
       map.getSource('trail-segment-highlight').setData({ type: 'FeatureCollection', features });
       return;
     }
 
+    const stopIds = getRideStopIds();
     const features = segmentLines
       .filter((s) => s.communityIds.every((id) => stopIds.has(id)))
       .map((s) => ({
@@ -187,6 +185,46 @@ function addRideHighlightLayer(map, segmentLines, trailLine, communityById) {
       }));
     map.getSource('trail-segment-highlight').setData({ type: 'FeatureCollection', features });
   });
+}
+
+// "Add to My Ride" buttons live in both town and point-of-interest popups;
+// one delegated handler covers them all, and every open button and marker
+// re-syncs whenever the ride changes.
+//
+// Popups that carry the button, so adding a stop can close its popup and
+// get it out of the way of the map.
+const ridePopups = new Set();
+
+function setupRideToggles(map) {
+  map.getContainer().addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-ride-toggle]');
+    if (!btn) return;
+    const stopId = btn.getAttribute('data-ride-toggle');
+    const isAdding = !isStopInRide(stopId);
+    toggleStopInRide(stopId);
+    if (isAdding) {
+      ridePopups.forEach((popup) => {
+        if (popup.getElement()?.contains(btn)) popup.remove();
+      });
+    }
+  });
+
+  onRideChange(() => {
+    document.querySelectorAll('[data-ride-toggle]').forEach((btn) => {
+      const inRide = isStopInRide(btn.getAttribute('data-ride-toggle'));
+      btn.textContent = inRide ? 'Remove from My Ride' : 'Add to My Ride';
+      btn.classList.toggle('map-popup__ride-btn--active', inRide);
+    });
+  });
+}
+
+function rideButtonHtml(stopId) {
+  const inRide = isStopInRide(stopId);
+  return `
+    <button type="button" class="map-popup__ride-btn${inRide ? ' map-popup__ride-btn--active' : ''}" data-ride-toggle="${escapeAttr(stopId)}">
+      ${inRide ? 'Remove from My Ride' : 'Add to My Ride'}
+    </button>
+  `;
 }
 
 function addCommunityMarkers(map, communities, amenities) {
@@ -204,6 +242,7 @@ function addCommunityMarkers(map, communities, amenities) {
       popupHtml(community, communityAmenities)
     );
     popup.on('open', () => popup.setHTML(popupHtml(community, communityAmenities)));
+    ridePopups.add(popup);
 
     const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat([community.lng, community.lat])
@@ -213,21 +252,9 @@ function addCommunityMarkers(map, communities, amenities) {
     return marker;
   });
 
-  map.getContainer().addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-ride-toggle]');
-    if (!btn) return;
-    toggleCommunityInRide(btn.getAttribute('data-ride-toggle'));
-  });
-
   onRideChange((selectedIds) => {
     markerEls.forEach((el, id) => {
       el.classList.toggle('trail-marker--selected', selectedIds.includes(id));
-    });
-    document.querySelectorAll('[data-ride-toggle]').forEach((btn) => {
-      const id = btn.getAttribute('data-ride-toggle');
-      const inRide = isCommunityInRide(id);
-      btn.textContent = inRide ? 'Remove from My Ride' : 'Add to My Ride';
-      btn.classList.toggle('map-popup__ride-btn--active', inRide);
     });
   });
 
@@ -239,16 +266,12 @@ function popupHtml(community, amenities) {
     ? `<ul class="map-popup__list">${amenityListItemsHtml(amenities)}</ul>`
     : '<p class="map-popup__empty">No amenities listed yet.</p>';
 
-  const inRide = isCommunityInRide(community.id);
-
   return `
     <div class="map-popup">
       <h3>${escapeHtml(community.name)}</h3>
       ${community.photo ? `<img class="map-popup__photo" src="${escapeAttr(community.photo)}" alt="${escapeAttr(community.name)}" />` : ''}
       ${community.description ? `<p>${escapeHtml(community.description)}</p>` : ''}
-      <button type="button" class="map-popup__ride-btn${inRide ? ' map-popup__ride-btn--active' : ''}" data-ride-toggle="${escapeAttr(community.id)}">
-        ${inRide ? 'Remove from My Ride' : 'Add to My Ride'}
-      </button>
+      ${rideButtonHtml(community.id)}
       <div class="map-popup__amenities">
         <p class="map-popup__amenities-label">Amenities</p>
         ${amenityIconsHtml(amenities)}
@@ -324,7 +347,9 @@ function amenityPopupHtml(amenity) {
 // table. Unlike amenity pins, these stay visible at every zoom level since
 // they're sights along the trail itself rather than in-town services.
 function addPointOfInterestMarkers(map, pointsOfInterest, communityById) {
-  return pointsOfInterest.filter(hasAmenityCoordinates).map((poi) => {
+  const markerEls = new Map();
+
+  const markers = pointsOfInterest.filter(hasAmenityCoordinates).map((poi) => {
     const el = document.createElement('div');
     el.className = 'poi-marker';
     el.setAttribute('aria-label', poi.name);
@@ -334,17 +359,28 @@ function addPointOfInterestMarkers(map, pointsOfInterest, communityById) {
     img.width = 18;
     img.height = 18;
     el.appendChild(img);
+    markerEls.set(poi.id, el);
 
     const nearestCommunity = poi.communityIds.map((id) => communityById.get(id)).find(Boolean);
     const popup = new mapboxgl.Popup({ offset: 20, maxWidth: '280px' }).setHTML(
       poiPopupHtml(poi, nearestCommunity)
     );
+    popup.on('open', () => popup.setHTML(poiPopupHtml(poi, nearestCommunity)));
+    ridePopups.add(popup);
 
     return new mapboxgl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat([poi.lng, poi.lat])
       .setPopup(popup)
       .addTo(map);
   });
+
+  onRideChange((selectedIds) => {
+    markerEls.forEach((el, id) => {
+      el.classList.toggle('poi-marker--selected', selectedIds.includes(id));
+    });
+  });
+
+  return markers;
 }
 
 function poiPopupHtml(poi, nearestCommunity) {
@@ -360,6 +396,7 @@ function poiPopupHtml(poi, nearestCommunity) {
       ${details.length ? `<p class="map-popup__amenities-label">${escapeHtml(details.join(' · '))}</p>` : ''}
       ${poi.photo ? `<img class="map-popup__photo" src="${escapeAttr(poi.photo)}" alt="${escapeAttr(poi.name)}" />` : ''}
       ${poi.description ? `<p>${escapeHtml(poi.description)}</p>` : ''}
+      ${isPlannableStop(poi.id) ? rideButtonHtml(poi.id) : ''}
     </div>
   `;
 }
